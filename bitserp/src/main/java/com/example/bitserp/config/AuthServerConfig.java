@@ -5,6 +5,7 @@ import com.nimbusds.jose.jwk.source.ImmutableJWKSet;
 import com.nimbusds.jose.jwk.source.JWKSource;
 import com.nimbusds.jose.proc.SecurityContext;
 import org.jspecify.annotations.NonNull;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -44,6 +45,9 @@ import java.util.UUID;
 
 @Configuration
 public class AuthServerConfig {
+
+    @Value("${app.security.client-secret}")
+    private String clientSecret;
 
     @Bean
     @Order(1)
@@ -119,12 +123,13 @@ public class AuthServerConfig {
 //        System.out.println(">>> BCRYPT HASH: " +
 //                new org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder()
 //                        .encode("bitserp-secret"));
-        PasswordEncoder encoder = new BCryptPasswordEncoder();
-        String encodedSecret = encoder.encode("bitserp-secret");
-        System.out.println(">>> HASH: " + encodedSecret);
+//        PasswordEncoder encoder = new BCryptPasswordEncoder();
+//        String encodedSecret = encoder.encode("bitserp-secret");
+//
+//        System.out.println(">>> HASH: " + encodedSecret);
         RegisteredClient registeredClient = RegisteredClient.withId(UUID.randomUUID().toString())
                 .clientId("bitserp-client")
-                .clientSecret(encodedSecret)
+                .clientSecret(clientSecret)
                 .clientAuthenticationMethods(methods -> {
                     methods.add(ClientAuthenticationMethod.CLIENT_SECRET_BASIC);
                     methods.add(ClientAuthenticationMethod.CLIENT_SECRET_POST);
