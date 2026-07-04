@@ -3,6 +3,7 @@ package com.example.bitserp.modules.inventory.controller;
 import com.example.bitserp.modules.inventory.dto.ProductRequest;
 import com.example.bitserp.modules.inventory.dto.ProductResponse;
 import com.example.bitserp.modules.inventory.dto.StockUpdateRequest;
+import com.example.bitserp.modules.inventory.entity.Inventory;
 import com.example.bitserp.modules.inventory.service.InventoryService;
 import com.example.bitserp.shared.dto.ApiResponse;
 import jakarta.validation.Valid;
@@ -22,7 +23,7 @@ public class InventoryController {
     private final InventoryService inventoryService;
 
     @PostMapping("/products")
-    @PreAuthorize("hasAnyRole('ADMIN','INV_MANAGER')")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<ApiResponse<ProductResponse>> createProduct(
             @Valid @RequestBody ProductRequest request
             ) {
@@ -48,6 +49,12 @@ public class InventoryController {
             ) {
         inventoryService.updateStock(id, request);
         return ResponseEntity.ok(ApiResponse.ok("Stock updated",null));
+    }
+
+    @GetMapping("/low-stock")
+    @PreAuthorize("hasAnyRole('ADMIN','INV_MANAGER')")
+    public ResponseEntity<ApiResponse<List<Inventory>>> getLowStock() {
+        return ResponseEntity.ok(ApiResponse.ok(inventoryService.getLowStockItems()));
     }
 
 }

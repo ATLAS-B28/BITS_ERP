@@ -1,6 +1,8 @@
 package com.example.bitserp.auth;
 
+import com.example.bitserp.auth.dto.LoginRequest;
 import com.example.bitserp.auth.dto.RegisterRequest;
+import com.example.bitserp.auth.dto.TokenResponse;
 import com.example.bitserp.shared.dto.ApiResponse;
 import com.example.bitserp.shared.entity.User;
 import jakarta.validation.Valid;
@@ -29,17 +31,38 @@ public class AuthController {
         return ResponseEntity.ok(ApiResponse.ok("User registered successfully", user.getEmail()));
     }
 
+    @PostMapping("/login")
+    public ResponseEntity<ApiResponse<TokenResponse>> login(
+            @Valid @RequestBody LoginRequest request
+            ) {
+        return ResponseEntity.ok(ApiResponse.ok(authService.login(request)));
+    }
+
+    @PostMapping("/refresh")
+    public ResponseEntity<ApiResponse<TokenResponse>> refresh(
+            @RequestBody Map<String, String> body
+    ) {
+        return ResponseEntity.ok(ApiResponse.ok(authService.refresh(body.get("refresh_token"))));
+    }
+
     @GetMapping("/me")
     public ResponseEntity<ApiResponse<Map<String, Object>>> me(
-            @AuthenticationPrincipal Jwt jwt
-            ) {
-        assert jwt.getExpiresAt() != null;
-        return ResponseEntity.ok(ApiResponse.ok(Map.of(
-                "email", jwt.getSubject(),
-                "roles", jwt.getClaim("roles"),
-                "expiresAt", jwt.getExpiresAt()
-        )));
+            @RequestHeader("Authorization") String authHeader
+    ) {
+        String token = authHeader.substring(7);
+        String email = authService.getJwtService().extractEmail(token);
+        String role = authService.getJwtService().extractRole(token);
+
+        return ResponseEntity.ok(
+                ApiResponse.ok(
+                        Map.of(
+                                "email", email,
+                                "role", role
+                        )
+                )
+        );
     }
+
     @GetMapping("/hash")
     public String hash(@RequestParam String password) {
         return passwordEncoder.encode(password);

@@ -13,6 +13,6 @@ public interface InventoryRepository extends JpaRepository<Inventory, Integer> {
     List<Inventory> findByLocationId(Integer locationId);
     List<Inventory> findByProductId(UUID productId);
 
-    @Query("SELECT i FROM Inventory i WHERE i.quantity <= i.reorderlevel")
+    @Query("SELECT i FROM Inventory i WHERE i.quantity <= i.reorderLevel")
     List<Inventory> finLowStockItems();
 }
