@@ -1,5 +1,6 @@
 package com.example.bitserp.config;
 
+import com.example.bitserp.auth.JwtAuthFilter;
 import com.example.bitserp.shared.repository.UserRepository;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -79,23 +80,24 @@ public class SecurityConfig {
 
     @Bean
     @Order(2)
-    public SecurityFilterChain apiFilterChain(HttpSecurity httpSecurity) throws Exception {
+    public SecurityFilterChain apiFilterChain(HttpSecurity httpSecurity, JwtAuthFilter jwtAuthFilter) throws Exception {
         httpSecurity.securityMatcher("/api/**")
                 .csrf(AbstractHttpConfigurer::disable)
                 .sessionManagement(s -> s
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/auth/**").permitAll()
+                        .requestMatchers("/api/auth/login","/api/auth/register","/api/auth/refresh").permitAll()
                         .requestMatchers("/api/admin/**").hasRole("ADMIN")
-                        .requestMatchers("/api/inventory/**").hasAnyRole("ADMIN", "INV_MANAGER", "INV_EMPLOYEE")
-                        .requestMatchers("/api/procurement/**").hasAnyRole("ADMIN", "PROC_MANAGER", "PROC_EMPLOYEE")
-                        .requestMatchers("/api/sales/**").hasAnyRole("ADMIN", "SALES_MANAGER", "SALES_EMPLOYEE")
-                        .requestMatchers("/api/gis/**").hasAnyRole("ADMIN", "INV_MANAGER", "INV_EMPLOYEE")
+                        .requestMatchers("/api/inventory/**").hasAnyRole("ADMIN","INV_MANAGER","INV_EMPLOYEE")
+                        .requestMatchers("/api/procurement/**").hasAnyRole("ADMIN","PROC_MANAGER","PROC_EMPLOYEE")
+                        .requestMatchers("/api/sales/**").hasAnyRole("ADMIN","SALES_MANAGER","SALES_EMPLOYEE")
+                        .requestMatchers("/api/finance/**").hasAnyRole("ADMIN","FIN_MANAGER","FIN_EMPLOYEE")
+                        .requestMatchers("/api/gis/**").hasAnyRole("ADMIN","INV_MANAGER","PROC_MANAGER","SALES_MANAGER")
                         .anyRequest().authenticated()
                 )
-                .oauth2ResourceServer(oauth2 -> oauth2.jwt(jwt ->
-                        jwt.jwtAuthenticationConverter(jwtAuthenticationConverter()))
-                );
+                .addFilterBefore(jwtAuthFilter,
+                        org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter.class);
 
         return httpSecurity.build();
     }
