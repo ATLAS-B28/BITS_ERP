@@ -1,8 +1,6 @@
 package com.example.bitserp.auth;
 
-import com.example.bitserp.auth.dto.LoginRequest;
-import com.example.bitserp.auth.dto.RegisterRequest;
-import com.example.bitserp.auth.dto.TokenResponse;
+import com.example.bitserp.auth.dto.*;
 import com.example.bitserp.shared.entity.Role;
 import com.example.bitserp.shared.entity.User;
 import com.example.bitserp.shared.exception.ResourceNotException;
@@ -14,6 +12,10 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
+import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -32,8 +34,8 @@ public class AuthService {
             throw new IllegalArgumentException("Email already exists");
         }
 
-        Role role = roleRepository.findByName(registerRequest.getRoleName())
-                .orElseThrow(() -> new ResourceNotException("Role not found: " + registerRequest.getRoleName()));
+        Role role = roleRepository.findByName("CUSTOMER")
+                .orElseThrow(() -> new ResourceNotException("Customer Role Not Found"));
 
         User user = new User();
 
@@ -41,8 +43,8 @@ public class AuthService {
         user.setEmail(registerRequest.getEmail());
         user.setPasswordHash(passwordEncoder.encode(registerRequest.getPassword()));
         user.setRole(role);
-        user.setActive(true);
-
+        user.setActive(false);
+        user.setStatus("PENDING");
         return userRepository.save(user);
     }
 
@@ -51,6 +53,12 @@ public class AuthService {
                 .orElseThrow(() -> new ResourceNotException("User not found: " + request.getEmail()));
         if(!user.getActive()) {
             throw new BadCredentialsException("Account disabled");
+        }
+        if ("PENDING".equals(user.getStatus())) {
+            throw new BadCredentialsException("Account pending admin approval");
+        }
+        if ("SUSPENDED".equals(user.getStatus())) {
+            throw new BadCredentialsException("Account suspended");
         }
         if(!passwordEncoder.matches(request.getPassword(), user.getPasswordHash())) {
             throw new BadCredentialsException("Wrong password");
@@ -70,7 +78,7 @@ public class AuthService {
     }
 
     public TokenResponse refresh(String refreshToken) {
-        if(jwtService.isTokenValid(refreshToken)) {
+        if(!jwtService.isTokenValid(refreshToken)) {
             throw new BadCredentialsException("Invalid refresh token");
         }
         String email = jwtService.extractEmail(refreshToken);
@@ -87,6 +95,44 @@ public class AuthService {
                 role,
                 email
         );
+    }
+
+    public void updateUser(UUID id, UpdateUserRequest request) {
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotException("User not found"));
+
+        if (request.getRoleName() != null) {
+            Role role = roleRepository.findByName(request.getRoleName())
+                    .orElseThrow(() -> new ResourceNotException(
+                            "Role not found: " + request.getRoleName()));
+            user.setRole(role);
+        }
+
+        if (request.getStatus() != null) {
+            user.setStatus(request.getStatus());
+            // auto activate/deactivate based on status
+            user.setActive("ACTIVE".equals(request.getStatus()));
+        }
+
+        userRepository.save(user);
+    }
+
+    public List<UserResponse> getPendingUsers() {
+        return userRepository.findByStatus("PENDING")
+                .stream()
+                .map(u -> new UserResponse(
+                        u.getId(), u.getName(), u.getEmail(),
+                        u.getRole().getName(), u.getStatus(), u.getActive()))
+                .collect(Collectors.toList());
+    }
+
+    public List<UserResponse> getAllUsers() {
+        return userRepository.findAll()
+                .stream()
+                .map(u -> new UserResponse(
+                        u.getId(), u.getName(), u.getEmail(),
+                        u.getRole().getName(), u.getStatus(), u.getActive()))
+                .collect(Collectors.toList());
     }
 
 }

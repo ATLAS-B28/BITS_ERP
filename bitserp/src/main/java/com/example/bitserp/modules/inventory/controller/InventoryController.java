@@ -23,7 +23,7 @@ public class InventoryController {
     private final InventoryService inventoryService;
 
     @PostMapping("/products")
-    @PreAuthorize("isAuthenticated()")
+    @PreAuthorize("hasAnyRole('ADMIN','INV_MANAGER')")
     public ResponseEntity<ApiResponse<ProductResponse>> createProduct(
             @Valid @RequestBody ProductRequest request
             ) {

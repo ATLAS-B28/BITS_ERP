@@ -18,6 +18,4 @@ public class RegisterRequest {
     @NotBlank
     @Size(min = 8)
     private String password;
-    @NotBlank
-    private String roleName;
 }

@@ -22,6 +22,8 @@ public class User extends BaseEntity {
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "role_id", nullable = false)
     private Role role;
+    @Column(nullable = false, length = 20)
+    private String status = "PENDING";
 
     @Column(nullable = false)
     private Boolean active = true;
