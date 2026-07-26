@@ -31,13 +31,13 @@ public class InventoryController {
     }
 
     @GetMapping("/products/{id}")
-    @PreAuthorize("hasAnyRole('ADMIN','INV_MANAGER','INV_EMPLOYEE'")
+    @PreAuthorize("hasAnyRole('ADMIN','INV_MANAGER','INV_EMPLOYEE')")
     public ResponseEntity<ApiResponse<ProductResponse>> getProduct(@PathVariable UUID id) {
         return ResponseEntity.ok(ApiResponse.ok(inventoryService.getProduct(id)));
     }
 
     @GetMapping("/products")
-    @PreAuthorize("hasAnyRole('ADMIN','INV_MANAGER','INV_EMPLOYEE'")
+    @PreAuthorize("hasAnyRole('ADMIN','INV_MANAGER','INV_EMPLOYEE')")
     public ResponseEntity<ApiResponse<List<ProductResponse>>> getAllProducts() {
         return ResponseEntity.ok(ApiResponse.ok(inventoryService.getAllProducts()));
     }

@@ -1,0 +1,19 @@
+package com.example.bitserp.modules.procurement.dto;
+
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+
+import java.util.UUID;
+
+@Getter
+@AllArgsConstructor
+public class VendorResponse {
+
+    private UUID id;
+    private String name;
+    private String contactEmail;
+    private String contactPhone;
+    private String city;
+    private String locationType;
+    private Boolean active;
+}

@@ -82,6 +82,7 @@ public class InventoryService {
         move.setProduct(product);
         move.setLocation(location);
         move.setChangeQty(request.getChangeQty());
+        move.setReason(request.getReason());
         stockMovementRepository.save(move);
     }
 

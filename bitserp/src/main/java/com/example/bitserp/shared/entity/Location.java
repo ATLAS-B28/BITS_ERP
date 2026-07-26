@@ -35,10 +35,10 @@ public class Location {
     @Column(length = 80)
     private String country = "India";
 
-    @Column(columnDefinition = "geography(Point, 4326)")
+    @Column(columnDefinition = "geometry(Point, 4326)")
     private Point coordinates;
 
-    @Column(nullable = false)
+    @Column(nullable = false, columnDefinition = "boolean default true")
     private Boolean active;
 
     @CreationTimestamp

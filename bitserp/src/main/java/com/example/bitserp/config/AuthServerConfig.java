@@ -135,22 +135,22 @@ public class AuthServerConfig {
                     methods.add(ClientAuthenticationMethod.CLIENT_SECRET_POST);
                 })
                 .authorizationGrantTypes(grants -> {
-                    grants.add(AuthorizationGrantType.AUTHORIZATION_CODE);
-                    grants.add(AuthorizationGrantType.REFRESH_TOKEN);
+                   // grants.add(AuthorizationGrantType.AUTHORIZATION_CODE);
+                    //grants.add(AuthorizationGrantType.REFRESH_TOKEN);
                     grants.add(AuthorizationGrantType.CLIENT_CREDENTIALS);
                 })
-                .redirectUri("http://localhost:3000/callback")
-                .redirectUri("http://127.0.0.1:3000/callback")
-                .postLogoutRedirectUri("http://localhost:3000")
+//                .redirectUri("http://localhost:3000/callback")
+//                .redirectUri("http://127.0.0.1:3000/callback")
+//                .postLogoutRedirectUri("http://localhost:3000")
                 .scopes(scopes -> {
                     scopes.add("read");
                     scopes.add("write");
-                    scopes.add("openid");
-                    scopes.add("profile");
+//                    scopes.add("openid");
+//                    scopes.add("profile");
                 })
                 .tokenSettings(TokenSettings.builder()
                         .accessTokenTimeToLive(Duration.ofHours(8))
-                        .refreshTokenTimeToLive(Duration.ofDays(7))
+                     //   .refreshTokenTimeToLive(Duration.ofDays(7))
                         .reuseRefreshTokens(false)
                         .build())
                 .build();
