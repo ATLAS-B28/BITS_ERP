@@ -1,5 +1,7 @@
 package com.example.bitserp.modules.procurement.service;
 
+import com.example.bitserp.modules.inventory.entity.Inventory;
+import com.example.bitserp.modules.inventory.entity.StockMovement;
 import com.example.bitserp.modules.inventory.repository.InventoryRepository;
 import com.example.bitserp.modules.inventory.repository.ProductRepository;
 import com.example.bitserp.modules.inventory.repository.StockMovementRepository;
@@ -21,6 +23,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
@@ -72,6 +75,93 @@ public class PurchaseOrderService {
                         BigDecimal::add
                 );
         po.setTotalAmount(total);
+
+        return toResponse(purchaseOrderRepository.save(po));
+    }
+
+    public List<PurchaseOrderResponse> getAllPOs() {
+        return purchaseOrderRepository.findAll()
+                .stream().map(this::toResponse).collect(Collectors.toList());
+    }
+
+    public PurchaseOrderResponse getPOById(UUID id) {
+        return toResponse(purchaseOrderRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotException("Purchase order not found" + id)));
+    }
+
+    public List<PurchaseOrderResponse> getPOsByStatus(PurchaseOrderStatus status) {
+        return purchaseOrderRepository.findByStatus(status)
+                .stream().map(this::toResponse).collect(Collectors.toList());
+    }
+
+    @Transactional
+    public PurchaseOrderResponse submitPO(UUID id) {
+        PurchaseOrder po = purchaseOrderRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotException("Purchase Order not found" + id));
+        if(po.getStatus() != PurchaseOrderStatus.DRAFT) {
+            throw new IllegalStateException("Only DRAFT purchase orders can be created");
+        }
+
+        po.setStatus(PurchaseOrderStatus.DRAFT);
+        return toResponse(purchaseOrderRepository.save(po));
+    }
+
+    @Transactional
+    public PurchaseOrderResponse approvePO(UUID id, String approverEmail) {
+        PurchaseOrder po = purchaseOrderRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotException("Purchase Order not found" + id));
+        if(po.getStatus() != PurchaseOrderStatus.SUBMITTED) {
+            throw new IllegalStateException("Only SUBMITTED purchase orders can be approved");
+        }
+        User approver = userRepository.findByEmail(approverEmail)
+                .orElseThrow(() -> new ResourceNotException("User not found" + approverEmail));
+
+        po.setStatus(PurchaseOrderStatus.APPROVED);
+        po.setApprovedBy(approver);
+
+        return toResponse(purchaseOrderRepository.save(po));
+    }
+
+    @Transactional
+    public PurchaseOrderResponse rejectPO(UUID id) {
+        PurchaseOrder po = purchaseOrderRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotException("Purchase Order not found" + id));
+        if(po.getStatus() != PurchaseOrderStatus.SUBMITTED) {
+            throw new IllegalStateException("Only SUBMITTED purchase orders can be rejected");
+        }
+
+        po.setStatus(PurchaseOrderStatus.REJECTED);
+
+        return toResponse(purchaseOrderRepository.save(po));
+    }
+
+    @Transactional
+    public PurchaseOrderResponse receivePO(UUID id) {
+        PurchaseOrder po = purchaseOrderRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotException("Purchase Order not found" + id));
+        if(po.getStatus() != PurchaseOrderStatus.APPROVED) {
+            throw new IllegalStateException("Only APPROVED purchase orders can be received");
+        }
+
+        po.getItems().forEach(item -> {
+            var locations = inventoryRepository.findByProductId(item.getProduct().getId());
+
+            if(!locations.isEmpty()) {
+                Inventory inv = locations.getFirst();
+                inv.setQuantity(inv.getQuantity() + item.getQuantity());
+                inventoryRepository.save(inv);
+            }
+
+            StockMovement movement = new StockMovement();
+            movement.setProduct(item.getProduct());
+            movement.setChangeQty(item.getQuantity());
+            movement.setReason("purchase_order");
+            movement.setReferenceId(po.getId());
+
+            stockMovementRepository.save(movement);
+        });
+
+        po.setStatus(PurchaseOrderStatus.RECEIVED);
 
         return toResponse(purchaseOrderRepository.save(po));
     }
