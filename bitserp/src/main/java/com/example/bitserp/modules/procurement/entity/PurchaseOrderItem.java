@@ -31,14 +31,6 @@ public class PurchaseOrderItem {
     @Column(name = "unit_price", nullable = false, precision = 12, scale = 2)
     private BigDecimal unitPrice;
 
-    @Column(name = "unit_price", nullable = false, precision = 12, scale = 2)
+    @Column(name = "total_price", nullable = false, precision = 14, scale = 2, insertable = false, updatable = false)
     private BigDecimal totalPrice;
-
-    @PrePersist
-    @PreUpdate
-    public void calculateTotal() {
-        if(quantity != null && unitPrice != null) {
-            this.totalPrice = unitPrice.multiply(BigDecimal.valueOf(quantity));
-        }
-    }
 }

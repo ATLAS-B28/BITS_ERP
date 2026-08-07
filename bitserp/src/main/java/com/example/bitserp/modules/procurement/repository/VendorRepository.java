@@ -9,5 +9,5 @@ import java.util.UUID;
 public interface VendorRepository extends JpaRepository<Vendor, UUID> {
     List<Vendor> findByActiveTrue();
     List<Vendor> findByLocationCity(String locationCity);
-    boolean existsByContactsEmail(String contactsEmail);
+    boolean existsByContactEmail(String contactsEmail);
 }

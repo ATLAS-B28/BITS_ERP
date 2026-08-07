@@ -50,6 +50,7 @@ public class PurchaseOrderService {
         po.setStatus(PurchaseOrderStatus.DRAFT);
         po.setRaisedBy(raisedBy);
 
+
         List<PurchaseOrderItem> items = purchaseOrderRequest.getItems()
                 .stream().map(itemReq -> {
                     var product = productRepository.findById(itemReq.getProductId())
@@ -57,8 +58,10 @@ public class PurchaseOrderService {
                     PurchaseOrderItem item = new PurchaseOrderItem();
                     item.setPurchaseOrder(po);
                     item.setProduct(product);
-                    item.setQuantity(item.getQuantity());
-                    item.setUnitPrice(item.getUnitPrice());
+                    item.setQuantity(itemReq.getQuantity());
+                    item.setUnitPrice(itemReq.getUnitPrice());
+//                    item.setTotalPrice(itemReq.getUnitPrice()
+//                            .multiply(BigDecimal.valueOf(item.getQuantity())));
                     return item;
                 }).toList();
 
@@ -102,7 +105,7 @@ public class PurchaseOrderService {
             throw new IllegalStateException("Only DRAFT purchase orders can be created");
         }
 
-        po.setStatus(PurchaseOrderStatus.DRAFT);
+        po.setStatus(PurchaseOrderStatus.SUBMITTED);
         return toResponse(purchaseOrderRepository.save(po));
     }
 
@@ -144,21 +147,22 @@ public class PurchaseOrderService {
         }
 
         po.getItems().forEach(item -> {
-            var locations = inventoryRepository.findByProductId(item.getProduct().getId());
+            List<Inventory> inventoryList = inventoryRepository.findByProductId(item.getProduct().getId());
 
-            if(!locations.isEmpty()) {
-                Inventory inv = locations.getFirst();
-                inv.setQuantity(inv.getQuantity() + item.getQuantity());
+            if(!inventoryList.isEmpty()) {
+                Inventory inv = inventoryList.getFirst();
+                inv.setQuantity(inv.getQuantity() + inv.getQuantity());
                 inventoryRepository.save(inv);
+                StockMovement movement = new StockMovement();
+                movement.setProduct(item.getProduct());
+                movement.setLocation(inv.getLocation());
+                movement.setChangeQty(item.getQuantity());
+                movement.setReason("purchase_order");
+                movement.setReferenceId(po.getId());
+
+                stockMovementRepository.save(movement);
             }
 
-            StockMovement movement = new StockMovement();
-            movement.setProduct(item.getProduct());
-            movement.setChangeQty(item.getQuantity());
-            movement.setReason("purchase_order");
-            movement.setReferenceId(po.getId());
-
-            stockMovementRepository.save(movement);
         });
 
         po.setStatus(PurchaseOrderStatus.RECEIVED);
