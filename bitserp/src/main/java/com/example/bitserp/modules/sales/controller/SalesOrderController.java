@@ -54,4 +54,37 @@ public class SalesOrderController {
                 salesOrderService.getAllOrdersByStatus(status)
         ));
     }
+
+    @PatchMapping("/orders/{id}/confirm")
+    @PreAuthorize("hasAnyRole('ADMIN','SALES_MANAGER','SALES_EMPLOYEE')")
+    public ResponseEntity<ApiResponse<SalesOrderResponse>> confirmOrder(
+            @PathVariable UUID id
+    ) {
+        return ResponseEntity.ok(ApiResponse.ok(salesOrderService.confirmOrder(id)));
+    }
+
+    @PatchMapping("/orders/{id}/dispatch")
+    @PreAuthorize("hasAnyRole('ADMIN','SALES_MANAGER','SALES_EMPLOYEE')")
+    public ResponseEntity<ApiResponse<SalesOrderResponse>> dispatchOrder(
+            @PathVariable UUID id
+    ) {
+        return ResponseEntity.ok(ApiResponse.ok(salesOrderService.updateStatus(id, SalesOrderStatus.DISPATCHED)));
+    }
+
+    @PatchMapping("/orders/{id}/deliver")
+    @PreAuthorize("hasAnyRole('ADMIN','SALES_MANAGER','SALES_EMPLOYEE')")
+    public ResponseEntity<ApiResponse<SalesOrderResponse>> deliverOrder(
+            @PathVariable UUID id
+    ) {
+        return ResponseEntity.ok(ApiResponse.ok(salesOrderService.updateStatus(id, SalesOrderStatus.DELIVERED)));
+    }
+
+    @PatchMapping("/orders/{id}/cancel")
+    @PreAuthorize("hasAnyRole('ADMIN','SALES_MANAGER','SALES_EMPLOYEE')")
+    public ResponseEntity<ApiResponse<SalesOrderResponse>> cancelOrder(
+            @PathVariable UUID id
+    ) {
+        return ResponseEntity.ok(ApiResponse.ok(salesOrderService.cancelOrder(id)));
+    }
+
 }
