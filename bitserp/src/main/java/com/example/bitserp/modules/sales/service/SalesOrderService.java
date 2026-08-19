@@ -1,5 +1,6 @@
 package com.example.bitserp.modules.sales.service;
 
+import com.example.bitserp.modules.finance.service.LedgerService;
 import com.example.bitserp.modules.inventory.entity.Inventory;
 import com.example.bitserp.modules.inventory.entity.StockMovement;
 import com.example.bitserp.modules.inventory.repository.InventoryRepository;
@@ -38,6 +39,7 @@ public class SalesOrderService {
     private final ProductRepository productRepository;
     private final StockMovementRepository stockMovementRepository;
     private final UserRepository userRepository;
+    private final LedgerService ledgerService;
 
     private final GeometryFactory geometryFactory = new GeometryFactory(new PrecisionModel(), 4326);
 
@@ -110,6 +112,14 @@ public class SalesOrderService {
             }
         });
         order.setStatus(SalesOrderStatus.CONFIRMED);
+
+        ledgerService.recordCredit(
+                order.getTotalAmount(),
+                "sales_order",
+                order.getId(),
+                "Sales order confirmed: " + order.getId()
+        );
+
         return toResponse(salesOrderRepository.save(order));
     }
 

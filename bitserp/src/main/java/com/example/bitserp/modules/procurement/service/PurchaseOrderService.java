@@ -1,5 +1,6 @@
 package com.example.bitserp.modules.procurement.service;
 
+import com.example.bitserp.modules.finance.service.LedgerService;
 import com.example.bitserp.modules.inventory.entity.Inventory;
 import com.example.bitserp.modules.inventory.entity.StockMovement;
 import com.example.bitserp.modules.inventory.repository.InventoryRepository;
@@ -36,6 +37,7 @@ public class PurchaseOrderService {
     private final StockMovementRepository stockMovementRepository;
     private final UserRepository userRepository;
     private final ProductRepository productRepository;
+    private final LedgerService ledgerService;
 
     @Transactional
     public PurchaseOrderResponse createPO(PurchaseOrderRequest purchaseOrderRequest, String userEmail) {
@@ -121,6 +123,13 @@ public class PurchaseOrderService {
 
         po.setStatus(PurchaseOrderStatus.APPROVED);
         po.setApprovedBy(approver);
+
+        ledgerService.recordDebit(
+                po.getTotalAmount(),
+                "purchase_order",
+                po.getId(),
+                "PO approved" + po.getId()
+        );
 
         return toResponse(purchaseOrderRepository.save(po));
     }
