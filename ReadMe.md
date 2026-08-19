@@ -68,6 +68,3 @@ The system is split into two main services:
 
 Communication between services occurs via:
 - Synchronous REST calls (for real-time predictions)
-- **⏳ Asynchronous messaging via RabbitMQ** (planned for batch processing and heavy tasks) – *Remaining*
-
-Both services share the same PostgreSQL database (with separate schemas) to ensure consistency.
