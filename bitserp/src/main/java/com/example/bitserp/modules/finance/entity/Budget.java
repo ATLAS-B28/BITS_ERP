@@ -25,7 +25,7 @@ public class Budget {
     private String name;
 
     @Column(nullable = false, length = 30)
-    private  String module;
+    private String module;
 
     @Column(length = 80)
     private String category;
