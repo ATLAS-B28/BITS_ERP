@@ -16,16 +16,6 @@
 - [Architecture Overview](#architecture-overview)
 - [Implementation Status](#implementation-status)
 - [Prerequisites](#prerequisites)
-- [Setup and Installation](#setup-and-installation)
-    - [Backend (Java Spring Boot)](#backend-java-spring-boot)
-    - [AI Service (Python FastAPI)](#ai-service-python-fastapi)
-- [Configuration](#configuration)
-- [Running the Application](#running-the-application)
-- [API Documentation](#api-documentation)
-- [Module Descriptions](#module-descriptions)
-- [Database Schema](#database-schema)
-- [Contributing](#contributing)
-- [License](#license)
 
 ---
 
@@ -68,3 +58,16 @@ The system is split into two main services:
 
 Communication between services occurs via:
 - Synchronous REST calls (for real-time predictions)
+
+---
+
+## Prerequisites
+
+- Java 17 or higher
+- Maven 3.8+
+- Python 3.10+
+- PostgreSQL 14+ with PostGIS extension
+- Redis (optional, for caching)
+- RabbitMQ (optional, for async tasks – **⏳ not yet required**)
+- Docker & Docker Compose (optional, for containerized deployment – **⏳ in progress**)
+
