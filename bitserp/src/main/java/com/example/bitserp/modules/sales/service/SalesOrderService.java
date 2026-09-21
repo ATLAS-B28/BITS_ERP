@@ -45,6 +45,8 @@ public class SalesOrderService {
 
     @Transactional
     public SalesOrderResponse createSaleOrder(SalesOrderRequest request, String userEmail) {
+        System.out.println("Items count: " + request.getItems().size());
+        System.out.println("First item: " + request.getItems().get(0).getProductId());
         Customer customer = customerRepository.findById(request.getCustomerId())
                 .orElseThrow(() -> new RuntimeException("Customer not found"));
         User createdBy = userRepository.findByEmail(userEmail)
@@ -62,7 +64,7 @@ public class SalesOrderService {
             ));
         }
 
-        List<SalesOrderItem> items = request.getItem().stream().map(itemReq -> {
+        List<SalesOrderItem> items = request.getItems().stream().map(itemReq -> {
             var product = productRepository.findById(itemReq.getProductId())
                     .orElseThrow(() -> new RuntimeException("Product not found" +  itemReq.getProductId()));
 
@@ -72,7 +74,7 @@ public class SalesOrderService {
                 throw new IllegalArgumentException("Insufficient stock" + product.getName());
             }
             SalesOrderItem item = new SalesOrderItem();
-            item.setOrder(order);
+            item.setSalesOrder(order);
             item.setQuantity(itemReq.getQuantity());
             item.setUnitPrice(itemReq.getUnitPrice());
             item.setProduct(product);
@@ -130,21 +132,25 @@ public class SalesOrderService {
         return toResponse(salesOrderRepository.save(order));
     }
 
+    @Transactional(readOnly = true)
     public List<SalesOrderResponse> getAllOrders() {
         return salesOrderRepository.findAll()
                 .stream().map(this::toResponse).collect(Collectors.toList());
     }
 
+    @Transactional(readOnly = true)
     public SalesOrderResponse getOrder(UUID id) {
         return toResponse(salesOrderRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Order not found")));
     }
 
+    @Transactional(readOnly = true)
     public List<SalesOrderResponse> getAllOrdersByCustomerId(UUID customerId) {
         return salesOrderRepository.findByCustomerId(customerId)
                 .stream().map(this::toResponse).collect(Collectors.toList());
     }
 
+    @Transactional(readOnly = true)
     public List<SalesOrderResponse> getAllOrdersByStatus(SalesOrderStatus status) {
         return salesOrderRepository.findByStatus(status)
                 .stream().map(this::toResponse).collect(Collectors.toList());
@@ -198,7 +204,7 @@ public class SalesOrderService {
 
         return new SalesOrderResponse(
                 salesOrder.getId(),
-                salesOrder.getCustomer().getCustomerName(),
+                salesOrder.getCustomer().getName(),
                 salesOrder.getStatus(),
                 salesOrder.getDeliveryAddress(),
                 salesOrder.getTotalAmount(),
@@ -206,5 +212,11 @@ public class SalesOrderService {
                 itemResponses,
                 salesOrder.getCreatedAt()
         );
+    }
+
+    @Transactional(readOnly = true)
+    public List<SalesOrderResponse> getDispatchedWithCoords() {
+        return salesOrderRepository.findDispatchedWithCoords()
+                .stream().map(this::toResponse).collect(Collectors.toList());
     }
 }

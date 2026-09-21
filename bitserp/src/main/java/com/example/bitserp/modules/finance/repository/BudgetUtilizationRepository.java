@@ -6,5 +6,5 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.List;
 
 public interface BudgetUtilizationRepository extends JpaRepository<BudgetUtilization, Integer> {
-    List<BudgetUtilization> fundByBudgetId(Integer budgetId);
+    List<BudgetUtilization> findByBudgetId(Integer budgetId);
 }

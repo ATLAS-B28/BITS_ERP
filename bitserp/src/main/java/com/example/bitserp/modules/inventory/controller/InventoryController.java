@@ -1,5 +1,6 @@
 package com.example.bitserp.modules.inventory.controller;
 
+import com.example.bitserp.modules.inventory.dto.LocationStockSummary;
 import com.example.bitserp.modules.inventory.dto.ProductRequest;
 import com.example.bitserp.modules.inventory.dto.ProductResponse;
 import com.example.bitserp.modules.inventory.dto.StockUpdateRequest;
@@ -51,10 +52,28 @@ public class InventoryController {
         return ResponseEntity.ok(ApiResponse.ok("Stock updated",null));
     }
 
+    @GetMapping("/by-location/{locationId}")
+    @PreAuthorize("hasAnyRole('ADMIN','INV_MANAGER','INV_EMPLOYEE')")
+    public ResponseEntity<ApiResponse<List<Inventory>>> getByLocation(
+            @PathVariable Integer locationId
+    ) {
+        return ResponseEntity.ok(ApiResponse.ok(
+                inventoryService.getByLocation(locationId)
+        ));
+    }
+
     @GetMapping("/low-stock")
     @PreAuthorize("hasAnyRole('ADMIN','INV_MANAGER')")
     public ResponseEntity<ApiResponse<List<Inventory>>> getLowStock() {
         return ResponseEntity.ok(ApiResponse.ok(inventoryService.getLowStockItems()));
+    }
+
+    @GetMapping("/summary-by-location")
+    @PreAuthorize("hasAnyRole('ADMIN','INV_MANAGER','INV_EMPLOYEE'")
+    public ResponseEntity<ApiResponse<List<LocationStockSummary>>> getSummaryByLocation() {
+        return ResponseEntity.ok(ApiResponse.ok(
+                inventoryService.getStockSummaryByLocation()
+        ));
     }
 
 }

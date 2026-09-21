@@ -12,6 +12,7 @@ import org.locationtech.jts.geom.GeometryFactory;
 import org.locationtech.jts.geom.Point;
 import org.locationtech.jts.geom.PrecisionModel;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -42,6 +43,7 @@ public class GisService {
         return toResponse(locationRepository.save(location));
     }
 
+    @Transactional(readOnly = true)
     public List<LocationResponse> getAllLocations() {
         return locationRepository.findByActiveTrue()
                 .stream()
@@ -49,6 +51,7 @@ public class GisService {
                 .collect(Collectors.toList());
     }
 
+    @Transactional(readOnly = true)
     public List<LocationResponse> getByType(String type) {
         return locationRepository.findByType(type)
                 .stream()

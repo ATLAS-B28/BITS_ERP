@@ -10,7 +10,7 @@ import java.time.OffsetDateTime;
 import java.util.UUID;
 
 @Entity
-@Table(name = "budget_utilization")
+@Table(name = "budget_utilizations")
 @Setter
 @Getter
 public class BudgetUtilization {

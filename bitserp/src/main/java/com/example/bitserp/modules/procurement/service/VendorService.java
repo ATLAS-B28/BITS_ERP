@@ -9,6 +9,7 @@ import com.example.bitserp.shared.exception.ResourceNotException;
 import com.example.bitserp.shared.repository.LocationRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.UUID;
@@ -36,10 +37,12 @@ public class VendorService {
         return toResponse(vendorRepository.save(vendor));
     }
 
+    @Transactional(readOnly = true)
     public List<VendorResponse> getAllVendors() {
         return vendorRepository.findByActiveTrue().stream().map(this::toResponse).collect(Collectors.toList());
     }
 
+    @Transactional(readOnly = true)
     public VendorResponse getVendorById(UUID id) {
         return toResponse(
                 vendorRepository.findById(id)

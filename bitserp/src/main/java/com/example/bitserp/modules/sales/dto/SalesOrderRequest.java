@@ -1,5 +1,6 @@
 package com.example.bitserp.modules.sales.dto;
 
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
@@ -17,5 +18,6 @@ public class SalesOrderRequest {
     private Double deliveryLatitude;
     private Double deliveryLongitude;
     @NotEmpty
-    private List<SalesOrderItemRequest> item;
+    @Valid
+    private List<SalesOrderItemRequest> items;
 }

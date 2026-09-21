@@ -10,6 +10,7 @@ import com.example.bitserp.modules.finance.repository.BudgetUtilizationRepositor
 import com.example.bitserp.shared.exception.ResourceNotException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -38,16 +39,19 @@ public class BudgetService {
         return toResponse(budgetRepository.save(budget));
     }
 
+    @Transactional(readOnly = true)
     public List<BudgetResponse> getAllBudgets() {
         return budgetRepository.findAll()
                 .stream().map(this::toResponse).collect(Collectors.toList());
     }
 
+    @Transactional(readOnly = true)
     public List<BudgetResponse> getBudgetsByModule(String module) {
         return budgetRepository.findByModule(module)
                 .stream().map(this::toResponse).collect(Collectors.toList());
     }
 
+    @Transactional(readOnly = true)
     public BudgetStatusResponse getBudgetStatus(String module) {
         Budget budget = budgetRepository
                 .findActiveByModule(module, LocalDate.now())

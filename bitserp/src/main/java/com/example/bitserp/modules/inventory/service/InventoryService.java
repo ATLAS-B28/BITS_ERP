@@ -1,5 +1,6 @@
 package com.example.bitserp.modules.inventory.service;
 
+import com.example.bitserp.modules.inventory.dto.LocationStockSummary;
 import com.example.bitserp.modules.inventory.dto.ProductRequest;
 import com.example.bitserp.modules.inventory.dto.ProductResponse;
 import com.example.bitserp.modules.inventory.dto.StockUpdateRequest;
@@ -44,6 +45,7 @@ public class InventoryService {
         return toResponse(productRepository.save(product));
     }
 
+    @Transactional(readOnly = true)
     public List<ProductResponse> getAllProducts() {
         return productRepository.findByActiveTrue()
                 .stream()
@@ -51,6 +53,7 @@ public class InventoryService {
                 .collect(Collectors.toList());
     }
 
+    @Transactional(readOnly = true)
     public ProductResponse getProduct(UUID id) {
         return toResponse(productRepository
                 .findById(id)
@@ -86,6 +89,7 @@ public class InventoryService {
         stockMovementRepository.save(move);
     }
 
+    @Transactional(readOnly = true)
     public List<Inventory> getLowStockItems() {
         return inventoryRepository.finLowStockItems();
     }
@@ -97,5 +101,30 @@ public class InventoryService {
                 product.getUnitPrice(), product.getUnitOfMeasure(),
                 product.getActive()
         );
+    }
+
+    @Transactional(readOnly = true)
+    public List<Inventory> getByLocation(Integer locationId) {
+        return inventoryRepository.findByLocationId(locationId);
+    }
+
+    @Transactional(readOnly = true)
+    public List<LocationStockSummary> getStockSummaryByLocation() {
+        List<Location> locations = locationRepository.findByActiveTrue();
+        return locations.stream().map(
+                loc -> {
+                    List<Inventory> inv = inventoryRepository.findByLocationId(loc.getId());
+                    int totalQty = inv.stream().mapToInt(Inventory::getQuantity).sum();
+                    boolean hasLowStock = inv.stream()
+                            .anyMatch(i -> i.getQuantity() <= i.getReorderLevel());
+                    Double lat = loc.getCoordinates() != null ? loc.getCoordinates().getY() : null;
+                    Double lng = loc.getCoordinates() != null ? loc.getCoordinates().getX() : null;
+
+                    return new LocationStockSummary(
+                            loc.getId(), loc.getName(), loc.getType(),
+                            lat, lng, totalQty, inv.size(), hasLowStock
+                    );
+                }
+        ).collect(Collectors.toList());
     }
 }

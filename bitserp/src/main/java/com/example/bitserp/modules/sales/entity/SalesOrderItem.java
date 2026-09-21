@@ -8,7 +8,7 @@ import lombok.Setter;
 import java.math.BigDecimal;
 
 @Entity
-@Table(name = "sales_order_item")
+@Table(name = "sales_order_items")
 @Setter
 @Getter
 public class SalesOrderItem {
@@ -19,7 +19,7 @@ public class SalesOrderItem {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "order_id", nullable = false)
-    private SalesOrder order;
+    private SalesOrder salesOrder;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "product_id", nullable = false)

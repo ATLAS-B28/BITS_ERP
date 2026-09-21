@@ -9,6 +9,7 @@ import com.example.bitserp.modules.finance.repository.LedgerEntryRepository;
 import com.example.bitserp.modules.sales.repository.SalesOrderRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -43,16 +44,19 @@ public class LedgerService {
         ledgerEntryRepository.save(entry);
     }
 
+    @Transactional(readOnly = true)
     public List<LedgerEntryResponse> getAllEntries() {
         return ledgerEntryRepository.findAll()
                 .stream().map(this::toResponse).collect(Collectors.toList());
     }
 
+    @Transactional(readOnly = true)
     public List<LedgerEntryResponse> getByType(String type) {
         return ledgerEntryRepository.findByType(type)
                 .stream().map(this::toResponse).collect(Collectors.toList());
     }
 
+    @Transactional(readOnly = true)
     public FinanceSummaryResponse getSummary() {
         BigDecimal totalDebits = ledgerEntryRepository.findTotalDebits();
         BigDecimal totalCredits = ledgerEntryRepository.findTotalCredits();

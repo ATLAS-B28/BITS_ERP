@@ -84,16 +84,19 @@ public class PurchaseOrderService {
         return toResponse(purchaseOrderRepository.save(po));
     }
 
+    @Transactional(readOnly = true)
     public List<PurchaseOrderResponse> getAllPOs() {
         return purchaseOrderRepository.findAll()
                 .stream().map(this::toResponse).collect(Collectors.toList());
     }
 
+    @Transactional(readOnly = true)
     public PurchaseOrderResponse getPOById(UUID id) {
         return toResponse(purchaseOrderRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotException("Purchase order not found" + id)));
     }
 
+    @Transactional(readOnly = true)
     public List<PurchaseOrderResponse> getPOsByStatus(PurchaseOrderStatus status) {
         return purchaseOrderRepository.findByStatus(status)
                 .stream().map(this::toResponse).collect(Collectors.toList());

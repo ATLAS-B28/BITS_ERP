@@ -14,7 +14,7 @@ import lombok.Setter;
 public class Customer extends BaseEntity {
 
     @Column(nullable = false, length = 150)
-    private String customerName;
+    private String name;
 
     @Column(length = 150)
     private String email;

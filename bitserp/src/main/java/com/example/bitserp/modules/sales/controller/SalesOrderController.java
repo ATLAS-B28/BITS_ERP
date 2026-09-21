@@ -87,4 +87,12 @@ public class SalesOrderController {
         return ResponseEntity.ok(ApiResponse.ok(salesOrderService.cancelOrder(id)));
     }
 
+    @GetMapping("/dispatched-map")
+    @PreAuthorize("hasAnyRole('ADMIN','SALES_MANAGER','SALES_EMPLOYEE','INV_MANAGER')")
+    public ResponseEntity<ApiResponse<List<SalesOrderResponse>>> getDispatchedForMap() {
+        return ResponseEntity.ok(ApiResponse.ok(
+           salesOrderService.getDispatchedWithCoords()
+        ));
+    }
+
 }

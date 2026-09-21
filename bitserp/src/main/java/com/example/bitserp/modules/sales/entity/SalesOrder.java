@@ -28,7 +28,7 @@ public class SalesOrder extends BaseEntity {
     @Column(name = "delivery_address")
     private String deliveryAddress;
 
-    @Column(name = "delivery_coords", columnDefinition = "geometry(Point,4326")
+    @Column(name = "delivery_coords", columnDefinition = "geography(Point,4326)")
     private Point deliveryCords;
 
     @Column(name = "total_amount", precision = 14, scale = 2)
