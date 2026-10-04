@@ -39,15 +39,14 @@ public class VendorService {
 
     @Transactional(readOnly = true)
     public List<VendorResponse> getAllVendors() {
-        return vendorRepository.findByActiveTrue().stream().map(this::toResponse).collect(Collectors.toList());
+        return vendorRepository.findByActiveTrueWithLocation()
+                .stream().map(this::toResponse).collect(Collectors.toList());
     }
 
     @Transactional(readOnly = true)
     public VendorResponse getVendorById(UUID id) {
-        return toResponse(
-                vendorRepository.findById(id)
-                        .orElseThrow(() -> new ResourceNotException("Vendor not found" + id))
-        );
+        return toResponse(vendorRepository.findByIdWithLocation(id)
+                .orElseThrow(() -> new ResourceNotException("Vendor not found")));
     }
 
     public VendorResponse updateVendor(UUID id, VendorRequest vendorRequest) {
@@ -75,11 +74,22 @@ public class VendorService {
     }
 
     private VendorResponse toResponse(Vendor vendor) {
-        String city = vendor.getLocation() != null ? vendor.getLocation().getCity() : null;
+        String city = null;
+        String address = null;
+        Double lat = null;
+        Double lng = null;
+        if(vendor.getLocation() != null) {
+            city = vendor.getLocation().getCity();
+            address = vendor.getLocation().getAddress();
+            if(vendor.getLocation().getCoordinates() != null) {
+                lat = vendor.getLocation().getCoordinates().getY();
+                lng = vendor.getLocation().getCoordinates().getX();
+            }
+        }
         String type = vendor.getLocation() != null ? vendor.getLocation().getType() : null;
         return new VendorResponse(
                 vendor.getId(), vendor.getName(), vendor.getContactEmail(),
-                vendor.getContactPhone(), city, type, vendor.getActive()
+                vendor.getContactPhone(), city, type, address, lat, lng, vendor.getActive()
         );
     }
 }

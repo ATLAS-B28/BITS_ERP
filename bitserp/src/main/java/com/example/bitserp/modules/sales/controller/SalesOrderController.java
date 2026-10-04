@@ -37,6 +37,24 @@ public class SalesOrderController {
         return ResponseEntity.ok(ApiResponse.ok(salesOrderService.getAllOrders()));
     }
 
+    @GetMapping("")
+    @PreAuthorize("hasAnyRole('ADMIN','SALES_MANAGER','SALES_EMPLOYEE','INV_MANAGER')")
+    public ResponseEntity<ApiResponse<List<SalesOrderResponse>>> getDispatchedForMap() {
+        return ResponseEntity.ok(ApiResponse.ok(
+                salesOrderService.getDispatchedWithCoords()
+        ));
+    }
+
+    @GetMapping("/orders/status/{status}")
+    @PreAuthorize("hasAnyRole('ADMIN','SALES_MANAGER','SALES_EMPLOYEE')")
+    public ResponseEntity<ApiResponse<List<SalesOrderResponse>>> getByStatus(
+            @PathVariable SalesOrderStatus status
+    ) {
+        return ResponseEntity.ok(ApiResponse.ok(
+                salesOrderService.getAllOrdersByStatus(status)
+        ));
+    }
+
     @GetMapping("/orders/{id}")
     @PreAuthorize("hasAnyRole('ADMIN','SALES_MANAGER','SALES_EMPLOYEE')")
     public ResponseEntity<ApiResponse<SalesOrderResponse>> getOrder(
@@ -45,15 +63,6 @@ public class SalesOrderController {
         return ResponseEntity.ok(ApiResponse.ok(salesOrderService.getOrder(id)));
     }
 
-    @GetMapping("/orders/{status}")
-    @PreAuthorize("hasAnyRole('ADMIN','SALES_MANAGER','SALES_EMPLOYEE')")
-    public ResponseEntity<ApiResponse<List<SalesOrderResponse>>> getByStatus(
-            @PathVariable SalesOrderStatus status
-            ) {
-        return ResponseEntity.ok(ApiResponse.ok(
-                salesOrderService.getAllOrdersByStatus(status)
-        ));
-    }
 
     @PatchMapping("/orders/{id}/confirm")
     @PreAuthorize("hasAnyRole('ADMIN','SALES_MANAGER','SALES_EMPLOYEE')")
@@ -87,12 +96,6 @@ public class SalesOrderController {
         return ResponseEntity.ok(ApiResponse.ok(salesOrderService.cancelOrder(id)));
     }
 
-    @GetMapping("/dispatched-map")
-    @PreAuthorize("hasAnyRole('ADMIN','SALES_MANAGER','SALES_EMPLOYEE','INV_MANAGER')")
-    public ResponseEntity<ApiResponse<List<SalesOrderResponse>>> getDispatchedForMap() {
-        return ResponseEntity.ok(ApiResponse.ok(
-           salesOrderService.getDispatchedWithCoords()
-        ));
-    }
+
 
 }

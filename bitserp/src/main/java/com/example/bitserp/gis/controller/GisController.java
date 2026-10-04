@@ -1,5 +1,6 @@
 package com.example.bitserp.gis.controller;
 
+import com.example.bitserp.gis.dto.EnrichedLocationResponse;
 import com.example.bitserp.gis.dto.LocationRequest;
 import com.example.bitserp.gis.dto.LocationResponse;
 import com.example.bitserp.gis.dto.NearbyRequest;
@@ -22,7 +23,7 @@ public class GisController {
     private final GisService gisService;
 
     @PostMapping("/locations")
-    @PreAuthorize("hasAnyRole('ADMIN','INV_MANAGER','PROC_MANAGER')")
+    @PreAuthorize("hasAnyRole('ADMIN','INV_MANAGER','PROC_MANAGER','SALES_MANAGER','HR_MANAGER')")
     public ResponseEntity<ApiResponse<LocationResponse>> createLocation(
             @Valid @RequestBody LocationRequest locationRequest
             ) {
@@ -57,5 +58,12 @@ public class GisController {
             @Valid @RequestBody NearbyRequest nearbyRequest
             ) {
         return ResponseEntity.ok(ApiResponse.ok(gisService.findNearBy(nearbyRequest)));
+    }
+
+    // returns all locations with their owner type and owner name
+    @GetMapping("/locations/enriched")
+    @PreAuthorize("hasAnyRole('ADMIN','INV_MANAGER','PROC_MANAGER','SALES_MANAGER')")
+    public ResponseEntity<ApiResponse<List<EnrichedLocationResponse>>> getEnrichedLocations() {
+        return ResponseEntity.ok(ApiResponse.ok(gisService.getEnrichedLocations()));
     }
 }

@@ -42,7 +42,7 @@ public class FinanceController {
         return ResponseEntity.ok(ApiResponse.ok(ledgerService.getSummary()));
     }
 
-    @PostMapping("/projection/calculate")
+    @PostMapping("/projections/calculate")
     @PreAuthorize("hasAnyRole('ADMIN','FIN_MANAGER')")
     public ResponseEntity<ApiResponse<RevenueProjectionResponse>> calculateProjection(
             @RequestParam(defaultValue = "3") int basisMonths

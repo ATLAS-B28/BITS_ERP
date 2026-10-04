@@ -5,6 +5,7 @@ import com.example.bitserp.shared.repository.UserRepository;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
@@ -88,12 +89,16 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/auth/**").permitAll()
                         .requestMatchers("/api/auth/login","/api/auth/register","/api/auth/refresh").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/inventory/products/**")
+                        .hasAnyRole("ADMIN","INV_MANAGER","INV_EMPLOYEE",
+                                "SALES_MANAGER","SALES_EMPLOYEE",
+                                "PROC_MANAGER","PROC_EMPLOYEE")
                         .requestMatchers("/api/admin/**").hasRole("ADMIN")
                         .requestMatchers("/api/inventory/**").hasAnyRole("ADMIN","INV_MANAGER","INV_EMPLOYEE")
                         .requestMatchers("/api/procurement/**").hasAnyRole("ADMIN","PROC_MANAGER","PROC_EMPLOYEE")
                         .requestMatchers("/api/sales/**").hasAnyRole("ADMIN","SALES_MANAGER","SALES_EMPLOYEE")
                         .requestMatchers("/api/finance/**").hasAnyRole("ADMIN","FIN_MANAGER","FIN_EMPLOYEE")
-                        .requestMatchers("/api/gis/**").hasAnyRole("ADMIN","INV_MANAGER","PROC_MANAGER","SALES_MANAGER")
+                        .requestMatchers("/api/gis/**").hasAnyRole("ADMIN","INV_MANAGER","PROC_MANAGER","SALES_MANAGER","HR_MANAGER")
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(jwtAuthFilter,

@@ -202,11 +202,18 @@ public class SalesOrderService {
                         i.getTotalPrice()
                 )).toList();
 
+        Double lat = salesOrder.getDeliveryCords() != null
+                ? salesOrder.getDeliveryCords().getY() : null;
+        Double lng = salesOrder.getDeliveryCords() != null
+                ? salesOrder.getDeliveryCords().getX() : null;
+
         return new SalesOrderResponse(
                 salesOrder.getId(),
                 salesOrder.getCustomer().getName(),
                 salesOrder.getStatus(),
                 salesOrder.getDeliveryAddress(),
+                lat,
+                lng,
                 salesOrder.getTotalAmount(),
                 salesOrder.getCreatedBy() != null ? salesOrder.getCreatedBy().getEmail() : null,
                 itemResponses,

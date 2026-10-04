@@ -3,6 +3,7 @@ package com.example.bitserp.modules.inventory.repository;
 import com.example.bitserp.modules.inventory.entity.Inventory;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 import java.util.List;
 import java.util.Optional;
@@ -15,4 +16,12 @@ public interface InventoryRepository extends JpaRepository<Inventory, Integer> {
 
     @Query("SELECT i FROM Inventory i WHERE i.quantity <= i.reorderLevel")
     List<Inventory> finLowStockItems();
+
+    @Query("Select i from Inventory i " +
+            "join fetch i.product " +
+            "join fetch i.location " +
+            "where i.location.id = :locationId")
+    List<Inventory> fingByLocationIdWithDetails(
+            @Param("locationId")  Integer locationId
+    );
 }

@@ -105,7 +105,7 @@ public class InventoryService {
 
     @Transactional(readOnly = true)
     public List<Inventory> getByLocation(Integer locationId) {
-        return inventoryRepository.findByLocationId(locationId);
+        return inventoryRepository.fingByLocationIdWithDetails(locationId);
     }
 
     @Transactional(readOnly = true)

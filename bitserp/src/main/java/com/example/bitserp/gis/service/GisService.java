@@ -1,8 +1,15 @@
 package com.example.bitserp.gis.service;
 
+import com.example.bitserp.gis.dto.EnrichedLocationResponse;
 import com.example.bitserp.gis.dto.LocationRequest;
 import com.example.bitserp.gis.dto.LocationResponse;
 import com.example.bitserp.gis.dto.NearbyRequest;
+import com.example.bitserp.modules.inventory.entity.Inventory;
+import com.example.bitserp.modules.inventory.repository.InventoryRepository;
+import com.example.bitserp.modules.procurement.entity.Vendor;
+import com.example.bitserp.modules.procurement.repository.VendorRepository;
+import com.example.bitserp.modules.sales.entity.Customer;
+import com.example.bitserp.modules.sales.repository.CustomerRepository;
 import com.example.bitserp.shared.entity.Location;
 import com.example.bitserp.shared.exception.ResourceNotException;
 import com.example.bitserp.shared.repository.LocationRepository;
@@ -15,6 +22,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
@@ -22,6 +30,9 @@ import java.util.stream.Collectors;
 public class GisService {
 
     private final LocationRepository locationRepository;
+    private final VendorRepository vendorRepository;
+    private final CustomerRepository customerRepository;
+    private final InventoryRepository inventoryRepository;
     private final GeometryFactory geometryFactory = new GeometryFactory(new PrecisionModel(), 4326);
 
     public LocationResponse createLocation(LocationRequest locationRequest) {
@@ -87,6 +98,65 @@ public class GisService {
     public LocationResponse findById(Integer id) {
         return toResponse(locationRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotException("Location with id " + id + " not found")));
+    }
+
+    public List<EnrichedLocationResponse> getEnrichedLocations() {
+        List<Location> locations = locationRepository.findByActiveTrue();
+
+        Map<Integer, String> vendorByLocation = vendorRepository.findByActiveTrue()
+                .stream()
+                .filter(v -> v.getLocation() != null)
+                .collect(Collectors.toMap(
+                        v -> v.getLocation().getId(),
+                        Vendor::getName,
+                        (a,b) -> a
+                ));
+
+        Map<Integer, String> customerByLocation = customerRepository.findAll()
+                .stream()
+                .filter(c -> c.getLocation() != null)
+                .collect(Collectors.toMap(
+                        c -> c.getLocation().getId(),
+                        Customer::getName,
+                        (a, b) -> a
+                ));
+
+        return locations.stream().map(loc -> {
+            Double lat = loc.getCoordinates() != null
+                    ? loc.getCoordinates().getY()  : null;
+            Double lon = loc.getCoordinates() != null
+                    ? loc.getCoordinates().getX() : null;
+
+            String ownerName = null;
+            String ownerType = "INTERNAL";
+
+            if(vendorByLocation.containsKey(loc.getId())) {
+                ownerName = vendorByLocation.get(loc.getId());
+                ownerType = "VENDOR";
+            } else if(customerByLocation.containsKey(loc.getId())) {
+                ownerName = customerByLocation.get(loc.getId());
+                ownerType = "CUSTOMER";
+            }
+
+            boolean hasLowStock = false;
+            int totalStock = 0;
+
+            if("warehouse".equals(loc.getId())) {
+                List<com.example.bitserp.modules.inventory.entity.Inventory> inv =
+                        inventoryRepository.findByLocationId(loc.getId());
+                totalStock = inv.stream()
+                        .mapToInt(Inventory::getQuantity).sum();
+                hasLowStock = inv.stream()
+                        .anyMatch(i -> i.getQuantity() <= i.getReorderLevel());
+            }
+
+            return new EnrichedLocationResponse(
+                    loc.getId(), loc.getName(), loc.getType(),
+                    ownerName, ownerType,
+                    loc.getAddress(), loc.getCity(), loc.getState(),
+                    lat, lon, loc.getActive(), hasLowStock, totalStock
+            );
+        }).collect(Collectors.toList());
     }
 
     private LocationResponse toResponse(Location location) {

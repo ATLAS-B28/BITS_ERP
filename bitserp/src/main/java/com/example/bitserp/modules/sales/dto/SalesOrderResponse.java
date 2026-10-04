@@ -16,6 +16,8 @@ public class SalesOrderResponse {
     private String customerName;
     private SalesOrderStatus status;
     private String deliveryAddress;
+    private Double deliveryLatitude;
+    private Double deliveryLongitude;
     private BigDecimal totalAmount;
     private String createdBy;
     private List<SalesOrderItemResponse> items;

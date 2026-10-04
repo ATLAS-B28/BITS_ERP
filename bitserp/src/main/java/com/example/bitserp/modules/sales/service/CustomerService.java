@@ -40,19 +40,29 @@ public class CustomerService {
 
     @Transactional(readOnly = true)
     public List<CustomerResponse> getAllCustomers() {
-        return customerRepository.findAll()
+        return customerRepository.findAllWithLocation()
                 .stream().map(this::toResponse).collect(Collectors.toList());
     }
 
     @Transactional(readOnly = true)
-    public CustomerResponse getCustomerById(UUID customerId) {
-        return toResponse(customerRepository.findById(customerId)
-                .orElseThrow(() -> new ResourceNotException("Customer not found"))
-        );
+    public CustomerResponse getCustomerById(UUID id) {
+        return toResponse(customerRepository.findByIdWithLocation(id)
+                .orElseThrow(() -> new ResourceNotException("Customer not found")));
     }
 
     private CustomerResponse toResponse(Customer customer) {
-        String city = customer.getLocation() != null ? customer.getLocation().getCity() : null;
-        return new CustomerResponse(customer.getId(), customer.getName(), customer.getEmail(), customer.getPhone(), city);
+        String city = null;
+        String address = null;
+        Double lat = null;
+        Double lng = null;
+        if(customer.getLocation() != null) {
+            city = customer.getLocation().getCity();
+            address = customer.getLocation().getAddress();
+            if(customer.getLocation().getCoordinates() != null) {
+                lat = customer.getLocation().getCoordinates().getY();
+                lng = customer.getLocation().getCoordinates().getX();
+            }
+        }
+        return new CustomerResponse(customer.getId(), customer.getName(), customer.getEmail(), customer.getPhone(), city, address, lat, lng);
     }
 }

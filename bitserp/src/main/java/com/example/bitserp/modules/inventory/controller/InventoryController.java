@@ -32,13 +32,13 @@ public class InventoryController {
     }
 
     @GetMapping("/products/{id}")
-    @PreAuthorize("hasAnyRole('ADMIN','INV_MANAGER','INV_EMPLOYEE')")
+    @PreAuthorize("hasAnyRole('ADMIN','INV_MANAGER','INV_EMPLOYEE','SALES_MANAGER','SALES_EMPLOYEE','PROC_MANAGER','PROC_EMPLOYEE')")
     public ResponseEntity<ApiResponse<ProductResponse>> getProduct(@PathVariable UUID id) {
         return ResponseEntity.ok(ApiResponse.ok(inventoryService.getProduct(id)));
     }
 
     @GetMapping("/products")
-    @PreAuthorize("hasAnyRole('ADMIN','INV_MANAGER','INV_EMPLOYEE')")
+    @PreAuthorize("hasAnyRole('ADMIN','INV_MANAGER','INV_EMPLOYEE','SALES_MANAGER','SALES_EMPLOYEE','PROC_MANAGER','PROC_EMPLOYEE')")
     public ResponseEntity<ApiResponse<List<ProductResponse>>> getAllProducts() {
         return ResponseEntity.ok(ApiResponse.ok(inventoryService.getAllProducts()));
     }
@@ -69,7 +69,7 @@ public class InventoryController {
     }
 
     @GetMapping("/summary-by-location")
-    @PreAuthorize("hasAnyRole('ADMIN','INV_MANAGER','INV_EMPLOYEE'")
+    @PreAuthorize("hasAnyRole('ADMIN','INV_MANAGER','INV_EMPLOYEE')")
     public ResponseEntity<ApiResponse<List<LocationStockSummary>>> getSummaryByLocation() {
         return ResponseEntity.ok(ApiResponse.ok(
                 inventoryService.getStockSummaryByLocation()

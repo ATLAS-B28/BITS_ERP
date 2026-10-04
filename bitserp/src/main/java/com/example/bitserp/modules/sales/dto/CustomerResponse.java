@@ -13,5 +13,8 @@ public class CustomerResponse {
     private String email;
     private String phone;
     private String city;
+    private String address;
+    private Double latitude;
+    private Double longitude;
 }
 

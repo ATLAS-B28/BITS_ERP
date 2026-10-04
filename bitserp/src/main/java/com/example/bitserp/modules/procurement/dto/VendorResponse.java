@@ -15,5 +15,8 @@ public class VendorResponse {
     private String contactPhone;
     private String city;
     private String locationType;
+    private String address;
+    private Double lat;
+    private Double lng;
     private Boolean active;
 }
