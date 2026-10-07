@@ -11,9 +11,9 @@
 
 **For AI and Frontend Repositories below are the links -**
 ## AI Repository - 
- [[BITS ERP AI](https://github.com/ATLAS-B28/BITS_ERP_AI)]
+ [BITS ERP AI](https://github.com/ATLAS-B28/BITS_ERP_AI)
 ## Frontend Repository - 
- [[BITS ERP Frontend](https://github.com/ATLAS-B28/BITS_ERP-Frontend)]
+ [BITS ERP Frontend](https://github.com/ATLAS-B28/BITS_ERP-Frontend)
  
 ---
 
@@ -47,8 +47,8 @@
 | **Core Backend**   | Java 17, Spring Boot 3.2, Spring Data JPA, Spring Security     | ✅ Ready        |
 | **Database**       | PostgreSQL (with PostGIS extension)                            | ✅ Ready        |
 | **GIS**            | PostGIS, Hibernate Spatial                                     | ✅ Ready        |
-| **AI Service**     | Python 3.10, FastAPI, Pandas, Scikit-learn, TensorFlow (optional) | ⏳ *Remaining*    |
-| **AI Models**      | Demand forecasting, anomaly detection, recommendations         | ⏳ *Remaining*  |
+| **AI Service**     | Python 3.10, FastAPI, Pandas, Scikit-learn, TensorFlow (optional) | ✅ Ready     |
+| **AI Models**      | Demand forecasting, anomaly detection, recommendations         | ✅ Ready        |
 | **Message Queue**  | RabbitMQ / Apache Kafka (for async tasks)                      | ⏳ *Remaining*  |
 | **API Documentation** | SpringDoc OpenAPI (Swagger UI)                               | ✅ Ready        |
 | **Build Tools**    | Maven (Java), Pipenv (Python)                                  | ✅ Ready        |
@@ -61,10 +61,8 @@
 The system is split into two main services:
 
 1. **Java Spring Boot Service** – Handles all core ERP logic, database interactions, and exposes REST APIs.
-2. **Python AI Service** – Dedicated microservice that consumes data from the main API, runs ML models, and exposes endpoints for predictions, analytics, and reports.
-
-Communication between services occurs via:
-- Synchronous REST calls (for real-time predictions)
+2. **Python AI Service** – Dedicated service that consumes data from the main API, runs ML models, and exposes endpoints for predictions, analytics, and reports.
+3. **React based Frontend** - Creation of interactive and responsive for users to interactive and display entire end-to-end ERP functionalities and display information based on assigned Roles to each user of the system.
 
 ---
 
