@@ -1,4 +1,4 @@
-# BITS ERP Backend
+# BITS ERP 
 
 [![Java](https://img.shields.io/badge/Java-17%2B-blue)](https://adoptium.net/)
 [![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.2.0-brightgreen)](https://spring.io/projects/spring-boot)
@@ -6,8 +6,15 @@
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.100.0-green)](https://fastapi.tiangolo.com/)
 [![License](https://img.shields.io/badge/License-MIT-purple)](LICENSE)
 
-**BITS ERP Backend** is a comprehensive enterprise resource planning system designed for educational institutions like BITS Pilani. It provides robust modules for authentication, role-based access control (RBAC), inventory management, procurement, sales, finance, and geographic information systems (GIS) — all powered by **Java Spring Boot**. Additionally, it integrates an AI service built with **Python (FastAPI)** for advanced analytics, predictions, and intelligent automation.
+## Backend Repository
+**BITS ERP Backend** is a comprehensive enterprise resource planning system designed for different domains of work from Manufacturing to Logistics and Real Estate businesses. It provides robust modules for authentication, role-based access control (RBAC), inventory management, procurement, sales, finance, and geographic information systems (GIS) — all powered by **Java Spring Boot**. Additionally, it integrates an AI service built with **Python (FastAPI)** for advanced analytics, predictions, and intelligent automation.
 
+**For AI and Frontend Repositories below are the links -**
+## AI Repository - 
+ [![BITS ERP AI](https://github.com/ATLAS-B28/BITS_ERP_AI)]
+## Frontend Repository - 
+ [![BITS ERP Frontend](https://github.com/ATLAS-B28/BITS_ERP-Frontend)]
+ 
 ---
 
 ## Table of Contents
