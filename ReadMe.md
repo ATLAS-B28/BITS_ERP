@@ -11,9 +11,9 @@
 
 **For AI and Frontend Repositories below are the links -**
 ## AI Repository - 
- [![BITS ERP AI](https://github.com/ATLAS-B28/BITS_ERP_AI)]
+ [[BITS ERP AI](https://github.com/ATLAS-B28/BITS_ERP_AI)]
 ## Frontend Repository - 
- [![BITS ERP Frontend](https://github.com/ATLAS-B28/BITS_ERP-Frontend)]
+ [[BITS ERP Frontend](https://github.com/ATLAS-B28/BITS_ERP-Frontend)]
  
 ---
 
