@@ -13,6 +13,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 @RestController
@@ -37,7 +38,7 @@ public class SalesOrderController {
         return ResponseEntity.ok(ApiResponse.ok(salesOrderService.getAllOrders()));
     }
 
-    @GetMapping("")
+    @GetMapping("/orders-dispatched")
     @PreAuthorize("hasAnyRole('ADMIN','SALES_MANAGER','SALES_EMPLOYEE','INV_MANAGER')")
     public ResponseEntity<ApiResponse<List<SalesOrderResponse>>> getDispatchedForMap() {
         return ResponseEntity.ok(ApiResponse.ok(
@@ -91,9 +92,11 @@ public class SalesOrderController {
     @PatchMapping("/orders/{id}/cancel")
     @PreAuthorize("hasAnyRole('ADMIN','SALES_MANAGER','SALES_EMPLOYEE')")
     public ResponseEntity<ApiResponse<SalesOrderResponse>> cancelOrder(
-            @PathVariable UUID id
-    ) {
-        return ResponseEntity.ok(ApiResponse.ok(salesOrderService.cancelOrder(id)));
+            @PathVariable UUID id,
+            @RequestBody(required = false)Map<String, String> body
+            ) {
+        String reason = body != null ? body.get("reason"): null;
+        return ResponseEntity.ok(ApiResponse.ok(salesOrderService.cancelOrder(id, reason)));
     }
 
 

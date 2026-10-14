@@ -41,4 +41,13 @@ public class CustomerController {
     public ResponseEntity<ApiResponse<List<CustomerResponse>>> getAllCustomers() {
         return ResponseEntity.ok(ApiResponse.ok(customerService.getAllCustomers()));
     }
+
+    @DeleteMapping("/customer/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN','SALES_MANAGER')")
+    public ResponseEntity<ApiResponse<CustomerResponse>> deleteCustomer(
+            @PathVariable UUID id
+    ) {
+        customerService.deactivateCustomer(id);
+        return ResponseEntity.ok(ApiResponse.ok("Customer deactivated", null));
+    }
 }

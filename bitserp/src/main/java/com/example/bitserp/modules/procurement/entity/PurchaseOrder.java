@@ -35,6 +35,9 @@ public class PurchaseOrder extends BaseEntity {
     @JoinColumn(name = "approved_by")
     private User approvedBy;
 
+    @Column(name = "cancellation_reason")
+    private String cancellationReason;
+
     @OneToMany(mappedBy = "purchaseOrder", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<PurchaseOrderItem> items = new ArrayList<>();
 }

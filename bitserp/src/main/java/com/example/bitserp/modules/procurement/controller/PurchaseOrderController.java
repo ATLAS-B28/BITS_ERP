@@ -13,6 +13,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 @RestController
@@ -75,9 +76,11 @@ public class PurchaseOrderController {
     @PatchMapping("/orders/{id}/reject")
     @PreAuthorize("hasAnyRole('ADMIN','PROC_MANAGER','PROC_EMPLOYEE')")
     public ResponseEntity<ApiResponse<PurchaseOrderResponse>> rejectPO(
-            @PathVariable UUID id
+            @PathVariable UUID id,
+            @RequestBody(required = false)Map<String, String> body
             ) {
-        return ResponseEntity.ok(ApiResponse.ok(purchaseOrderService.rejectPO(id)));
+        String reason = body != null ? body.get("reason") : null;
+        return ResponseEntity.ok(ApiResponse.ok(purchaseOrderService.rejectPO(id, reason)));
     }
 
     @PatchMapping("/orders/{id}/receive")

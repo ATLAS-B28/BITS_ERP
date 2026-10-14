@@ -138,7 +138,7 @@ public class PurchaseOrderService {
     }
 
     @Transactional
-    public PurchaseOrderResponse rejectPO(UUID id) {
+    public PurchaseOrderResponse rejectPO(UUID id, String reason) {
         PurchaseOrder po = purchaseOrderRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotException("Purchase Order not found" + id));
         if(po.getStatus() != PurchaseOrderStatus.SUBMITTED) {
@@ -146,7 +146,7 @@ public class PurchaseOrderService {
         }
 
         po.setStatus(PurchaseOrderStatus.REJECTED);
-
+        po.setCancellationReason(reason);
         return toResponse(purchaseOrderRepository.save(po));
     }
 

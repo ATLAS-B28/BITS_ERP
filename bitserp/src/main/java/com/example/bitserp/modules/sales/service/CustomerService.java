@@ -65,4 +65,11 @@ public class CustomerService {
         }
         return new CustomerResponse(customer.getId(), customer.getName(), customer.getEmail(), customer.getPhone(), city, address, lat, lng);
     }
+
+    public void deactivateCustomer(UUID id) {
+        Customer customer = customerRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotException("Customer not found"));
+        customer.setActive(false);
+        customerRepository.save(customer);
+    }
 }

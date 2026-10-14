@@ -89,10 +89,18 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/auth/**").permitAll()
                         .requestMatchers("/api/auth/login","/api/auth/register","/api/auth/refresh").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/inventory/products")
+                        .hasAnyRole("ADMIN","INV_MANAGER","INV_EMPLOYEE",
+                                "SALES_MANAGER","SALES_EMPLOYEE",
+                                "PROC_MANAGER","PROC_EMPLOYEE")
                         .requestMatchers(HttpMethod.GET, "/api/inventory/products/**")
                         .hasAnyRole("ADMIN","INV_MANAGER","INV_EMPLOYEE",
                                 "SALES_MANAGER","SALES_EMPLOYEE",
                                 "PROC_MANAGER","PROC_EMPLOYEE")
+                        .requestMatchers(HttpMethod.GET, "/api/inventory/summary-by-location")
+                        .hasAnyRole("ADMIN","INV_MANAGER","SALES_MANAGER","PROC_MANAGER")
+                        .requestMatchers(HttpMethod.GET, "/api/inventory/by-location/**")
+                        .hasAnyRole("ADMIN","INV_MANAGER","SALES_MANAGER")
                         .requestMatchers("/api/admin/**").hasRole("ADMIN")
                         .requestMatchers("/api/inventory/**").hasAnyRole("ADMIN","INV_MANAGER","INV_EMPLOYEE")
                         .requestMatchers("/api/procurement/**").hasAnyRole("ADMIN","PROC_MANAGER","PROC_EMPLOYEE")

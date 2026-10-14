@@ -22,6 +22,9 @@ public class Customer extends BaseEntity {
     @Column(length = 20)
     private String phone;
 
+    @Column(nullable = false)
+    private Boolean active = true;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
     private User user;

@@ -157,7 +157,7 @@ public class SalesOrderService {
     }
 
     @Transactional
-    public SalesOrderResponse cancelOrder(UUID id) {
+    public SalesOrderResponse cancelOrder(UUID id, String reason) {
         SalesOrder order = getOrderEntity(id);
         if(order.getStatus() == SalesOrderStatus.DELIVERED) {
             throw new IllegalArgumentException("Order is not delivered");
@@ -182,6 +182,7 @@ public class SalesOrderService {
                 });
         }
         order.setStatus(SalesOrderStatus.CANCELLED);
+        order.setCancellationReason(reason);
         return toResponse(salesOrderRepository.save(order));
     }
 
