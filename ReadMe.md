@@ -1,4 +1,4 @@
-# BITS ERP Backend
+# BITS ERP 
 
 [![Java](https://img.shields.io/badge/Java-17%2B-blue)](https://adoptium.net/)
 [![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.2.0-brightgreen)](https://spring.io/projects/spring-boot)
@@ -6,8 +6,15 @@
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.100.0-green)](https://fastapi.tiangolo.com/)
 [![License](https://img.shields.io/badge/License-MIT-purple)](LICENSE)
 
-**BITS ERP Backend** is a comprehensive enterprise resource planning system designed for educational institutions like BITS Pilani. It provides robust modules for authentication, role-based access control (RBAC), inventory management, procurement, sales, finance, and geographic information systems (GIS) — all powered by **Java Spring Boot**. Additionally, it integrates an AI service built with **Python (FastAPI)** for advanced analytics, predictions, and intelligent automation.
+## Backend Repository
+**BITS ERP Backend** is a comprehensive enterprise resource planning system designed for different domains of work from Manufacturing to Logistics and Real Estate businesses. It provides robust modules for authentication, role-based access control (RBAC), inventory management, procurement, sales, finance, and geographic information systems (GIS) — all powered by **Java Spring Boot**. Additionally, it integrates an AI service built with **Python (FastAPI)** for advanced analytics, predictions, and intelligent automation.
 
+**For AI and Frontend Repositories below are the links -**
+## AI Repository - 
+ [BITS ERP AI](https://github.com/ATLAS-B28/BITS_ERP_AI)
+## Frontend Repository - 
+ [BITS ERP Frontend](https://github.com/ATLAS-B28/BITS_ERP-Frontend)
+ 
 ---
 
 ## Table of Contents
@@ -40,8 +47,8 @@
 | **Core Backend**   | Java 17, Spring Boot 3.2, Spring Data JPA, Spring Security     | ✅ Ready        |
 | **Database**       | PostgreSQL (with PostGIS extension)                            | ✅ Ready        |
 | **GIS**            | PostGIS, Hibernate Spatial                                     | ✅ Ready        |
-| **AI Service**     | Python 3.10, FastAPI, Pandas, Scikit-learn, TensorFlow (optional) | ⏳ *Remaining*    |
-| **AI Models**      | Demand forecasting, anomaly detection, recommendations         | ⏳ *Remaining*  |
+| **AI Service**     | Python 3.10, FastAPI, Pandas, Scikit-learn, TensorFlow (optional) | ✅ Ready     |
+| **AI Models**      | Demand forecasting, anomaly detection, recommendations         | ✅ Ready        |
 | **Message Queue**  | RabbitMQ / Apache Kafka (for async tasks)                      | ⏳ *Remaining*  |
 | **API Documentation** | SpringDoc OpenAPI (Swagger UI)                               | ✅ Ready        |
 | **Build Tools**    | Maven (Java), Pipenv (Python)                                  | ✅ Ready        |
@@ -54,10 +61,8 @@
 The system is split into two main services:
 
 1. **Java Spring Boot Service** – Handles all core ERP logic, database interactions, and exposes REST APIs.
-2. **Python AI Service** – Dedicated microservice that consumes data from the main API, runs ML models, and exposes endpoints for predictions, analytics, and reports.
-
-Communication between services occurs via:
-- Synchronous REST calls (for real-time predictions)
+2. **Python AI Service** – Dedicated service that consumes data from the main API, runs ML models, and exposes endpoints for predictions, analytics, and reports.
+3. **React based Frontend** - Creation of interactive and responsive for users to interactive and display entire end-to-end ERP functionalities and display information based on assigned Roles to each user of the system.
 
 ---
 
