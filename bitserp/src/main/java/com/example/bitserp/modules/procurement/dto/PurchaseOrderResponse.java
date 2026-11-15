@@ -12,12 +12,24 @@ import java.util.UUID;
 @Getter
 @AllArgsConstructor
 public class PurchaseOrderResponse {
-
-    private UUID id;
-    private String vendorName;
-    private PurchaseOrderStatus status;
-    private BigDecimal totalAmount;
-    private String raisedBy;
-    private List<PurchaseOrderItemResponse> items;
-    private OffsetDateTime createdAt;
-}
+    UUID id;
+    String vendorName;
+    PurchaseOrderStatus status;
+    BigDecimal subtotal;
+    BigDecimal totalAmount;
+    BigDecimal grandTotal;
+    BigDecimal cgstAmount;
+    BigDecimal sgstAmount;
+    BigDecimal igstAmount;
+    BigDecimal tdsAmount;
+    BigDecimal taxTotal;
+    String currency;
+    BigDecimal exchangeRate;
+    Boolean isInterstate;
+    String tdsCategory;
+    String cancellationReason;
+    String raisedBy;
+    String approvedBy;
+    List<PurchaseOrderItemResponse> items;  // ← items is 19th
+    OffsetDateTime createdAt;
+};

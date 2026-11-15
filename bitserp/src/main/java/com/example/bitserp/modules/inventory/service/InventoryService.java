@@ -1,5 +1,6 @@
 package com.example.bitserp.modules.inventory.service;
 
+import com.example.bitserp.modules.automation.service.AutomationService;
 import com.example.bitserp.modules.inventory.dto.LocationStockSummary;
 import com.example.bitserp.modules.inventory.dto.ProductRequest;
 import com.example.bitserp.modules.inventory.dto.ProductResponse;
@@ -29,6 +30,7 @@ public class InventoryService {
     private final InventoryRepository inventoryRepository;
     private final StockMovementRepository stockMovementRepository;
     private final LocationRepository locationRepository;
+    private final AutomationService automationService;
 
     public ProductResponse createProduct(ProductRequest request) {
         if(productRepository.existsBySku(request.getSku())) {
@@ -79,7 +81,7 @@ public class InventoryService {
         int newQty = inventory.getQuantity() + request.getChangeQty();
         if(newQty < 0) throw new IllegalArgumentException("Quantity cannot be less than 0");
         inventory.setQuantity(newQty);
-        inventoryRepository.save(inventory);
+        Inventory saved = inventoryRepository.save(inventory);
 
         StockMovement move = new StockMovement();
         move.setProduct(product);
@@ -87,6 +89,8 @@ public class InventoryService {
         move.setChangeQty(request.getChangeQty());
         move.setReason(request.getReason());
         stockMovementRepository.save(move);
+
+        automationService.checkAndTriggerAutoPO(saved);
     }
 
     @Transactional(readOnly = true)

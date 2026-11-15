@@ -17,6 +17,9 @@ public class SalesOrderRequest {
     private String deliveryAddress;
     private Double deliveryLatitude;
     private Double deliveryLongitude;
+
+    private String currency = "INR";
+    private String customerCountry = "IN";
     @NotEmpty
     @Valid
     private List<SalesOrderItemRequest> items;

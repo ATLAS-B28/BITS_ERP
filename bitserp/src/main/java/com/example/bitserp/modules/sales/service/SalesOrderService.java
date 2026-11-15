@@ -1,6 +1,8 @@
 package com.example.bitserp.modules.sales.service;
 
+import com.example.bitserp.modules.finance.service.CurrencyService;
 import com.example.bitserp.modules.finance.service.LedgerService;
+import com.example.bitserp.modules.finance.service.TaxService;
 import com.example.bitserp.modules.inventory.entity.Inventory;
 import com.example.bitserp.modules.inventory.entity.StockMovement;
 import com.example.bitserp.modules.inventory.repository.InventoryRepository;
@@ -40,6 +42,8 @@ public class SalesOrderService {
     private final StockMovementRepository stockMovementRepository;
     private final UserRepository userRepository;
     private final LedgerService ledgerService;
+    private final TaxService taxService;
+    private final CurrencyService currencyService;
 
     private final GeometryFactory geometryFactory = new GeometryFactory(new PrecisionModel(), 4326);
 
@@ -57,11 +61,28 @@ public class SalesOrderService {
         order.setStatus(SalesOrderStatus.PENDING);
         order.setDeliveryAddress(request.getDeliveryAddress());
         order.setCreatedBy(createdBy);
+        order.setCurrency(request.getCurrency() != null ? request.getCurrency() : "INR");
+
+        String customerState = customer.getLocation() != null
+                ? customer.getLocation().getState() : null;
+        String customerCountry = request.getCustomerCountry() != null
+                ? request.getCustomerCountry() : "IN";
+        boolean isExport = !"IN".equalsIgnoreCase(customerCountry);
+        boolean isInterState = !isExport && taxService.isInterstate(customerState);
+
+        order.setCustomerState(customerState);
+        order.setCustomerCountry(customerCountry);
+        order.setIsExport(isExport);
+        order.setIsInterstate(isInterState);
 
         if(request.getDeliveryLatitude() != null && request.getDeliveryLongitude() != null) {
-            order.setDeliveryCords(geometryFactory.createPoint(
-                    new Coordinate(request.getDeliveryLongitude(), request.getDeliveryLatitude())
-            ));
+            order.setDeliveryCords(
+                    new org.locationtech.jts.geom.GeometryFactory(
+                            new org.locationtech.jts.geom.PrecisionModel(), 4326)
+                            .createPoint(new org.locationtech.jts.geom.Coordinate(
+                                    request.getDeliveryLongitude(),
+                                    request.getDeliveryLatitude()))
+            );
         }
 
         List<SalesOrderItem> items = request.getItems().stream().map(itemReq -> {
@@ -83,10 +104,39 @@ public class SalesOrderService {
 
         order.setItems(items);
 
-        BigDecimal total = items.stream()
-                .map(i -> i.getUnitPrice().multiply(BigDecimal.valueOf(i.getQuantity())))
+        BigDecimal subtotalInCurrency = items.stream()
+                .map(i -> i.getUnitPrice()
+                        .multiply(BigDecimal.valueOf(i.getQuantity())))
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
-        order.setTotalAmount(total);
+
+        BigDecimal subtotalInr = currencyService.toINR(
+                subtotalInCurrency, order.getCurrency()
+        );
+
+        BigDecimal exchangeRate = currencyService.getRate(
+                order.getCurrency(), "INR"
+        );
+        order.setExchangeRate(exchangeRate);
+
+        BigDecimal gstRate = items.isEmpty()
+                ? BigDecimal.valueOf(18)
+                : items.getFirst().getProduct().getGstRate() != null
+                ? items.getFirst().getProduct().getGstRate()
+                : BigDecimal.valueOf(18);
+
+        TaxService.TaxCalculation tax = taxService.calculateSOTax(
+                subtotalInr, gstRate,
+                customerState, isInterState, isExport
+        );
+
+        order.setSubtotal(subtotalInr);
+        order.setTotalAmount(subtotalInr);
+        order.setCgstAmount(tax.getCgstAmount());
+        order.setSgstAmount(tax.getSgstAmount());
+        order.setIgstAmount(tax.getIgstAmount());
+        order.setTaxTotal(tax.getTaxTotal());
+        order.setGrandTotal(tax.getGrandTotal());
+
 
         return toResponse(salesOrderRepository.save(order));
     }
@@ -218,7 +268,19 @@ public class SalesOrderService {
                 salesOrder.getTotalAmount(),
                 salesOrder.getCreatedBy() != null ? salesOrder.getCreatedBy().getEmail() : null,
                 itemResponses,
-                salesOrder.getCreatedAt()
+                salesOrder.getCreatedAt(),
+                salesOrder.getSubtotal(),
+                salesOrder.getGrandTotal(),
+                salesOrder.getCgstAmount(),
+                salesOrder.getSgstAmount(),
+                salesOrder.getIgstAmount(),
+                salesOrder.getTaxTotal(),
+                salesOrder.getCurrency(),
+                salesOrder.getExchangeRate(),
+                salesOrder.getIsInterstate(),
+                salesOrder.getIsExport(),
+                salesOrder.getCustomerCountry(),
+                salesOrder.getCancellationReason()
         );
     }
 

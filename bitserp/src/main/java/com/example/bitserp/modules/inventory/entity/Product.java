@@ -35,4 +35,13 @@ public class Product extends BaseEntity {
 
     @Column(nullable = false)
     private Boolean active = true;
+
+    @Column(name = "hsn_code", length = 20)
+    private String hsnCode;
+
+    @Column(name = "gst_rate", precision = 6, scale = 4)
+    private BigDecimal gstRate = BigDecimal.valueOf(18);
+
+    @Column(name = "gst_category", length = 20)
+    private String gstCategory = "goods_services";
 }

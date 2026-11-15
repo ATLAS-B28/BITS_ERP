@@ -97,6 +97,10 @@ public class SecurityConfig {
                         .hasAnyRole("ADMIN","INV_MANAGER","INV_EMPLOYEE",
                                 "SALES_MANAGER","SALES_EMPLOYEE",
                                 "PROC_MANAGER","PROC_EMPLOYEE")
+                        .requestMatchers("/api/notifications/**").authenticated()
+                        .requestMatchers("/api/automation/settings")
+                        .hasAnyRole("ADMIN","INV_MANAGER","PROC_MANAGER")
+                        .requestMatchers("/api/automation/**").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.GET, "/api/inventory/summary-by-location")
                         .hasAnyRole("ADMIN","INV_MANAGER","SALES_MANAGER","PROC_MANAGER")
                         .requestMatchers(HttpMethod.GET, "/api/inventory/by-location/**")
@@ -105,6 +109,9 @@ public class SecurityConfig {
                         .requestMatchers("/api/inventory/**").hasAnyRole("ADMIN","INV_MANAGER","INV_EMPLOYEE")
                         .requestMatchers("/api/procurement/**").hasAnyRole("ADMIN","PROC_MANAGER","PROC_EMPLOYEE")
                         .requestMatchers("/api/sales/**").hasAnyRole("ADMIN","SALES_MANAGER","SALES_EMPLOYEE")
+                        .requestMatchers("/api/finance/tax/**")
+                        .hasAnyRole("ADMIN","FIN_MANAGER","FIN_EMPLOYEE",
+                                "PROC_MANAGER","SALES_MANAGER","ACCOUNTS")
                         .requestMatchers("/api/finance/**").hasAnyRole("ADMIN","FIN_MANAGER","FIN_EMPLOYEE")
                         .requestMatchers("/api/gis/**").hasAnyRole("ADMIN","INV_MANAGER","PROC_MANAGER","SALES_MANAGER","HR_MANAGER")
                         .anyRequest().authenticated()

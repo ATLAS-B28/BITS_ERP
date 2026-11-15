@@ -22,4 +22,16 @@ public class SalesOrderResponse {
     private String createdBy;
     private List<SalesOrderItemResponse> items;
     private OffsetDateTime createdAt;
+    private BigDecimal subtotal;
+    private BigDecimal grandTotal;
+    private BigDecimal cgstAmount;
+    private BigDecimal sgstAmount;
+    private BigDecimal igstAmount;
+    private BigDecimal taxTotal;
+    private String currency;
+    private BigDecimal exchangeRate;
+    private Boolean isInterstate;
+    private Boolean isExport;
+    private String customerCountry;
+    private String cancellationReason;
 }

@@ -17,4 +17,7 @@ public class PurchaseOrderRequest {
 
     @NotEmpty
     private List<PurchaseOrderItemRequest> items;
+
+    private String currency = "INR";
+    private String tdsCategory = "goods";
 }

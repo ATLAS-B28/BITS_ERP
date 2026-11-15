@@ -1,6 +1,8 @@
 package com.example.bitserp.modules.procurement.service;
 
+import com.example.bitserp.modules.finance.service.CurrencyService;
 import com.example.bitserp.modules.finance.service.LedgerService;
+import com.example.bitserp.modules.finance.service.TaxService;
 import com.example.bitserp.modules.inventory.entity.Inventory;
 import com.example.bitserp.modules.inventory.entity.StockMovement;
 import com.example.bitserp.modules.inventory.repository.InventoryRepository;
@@ -38,6 +40,8 @@ public class PurchaseOrderService {
     private final UserRepository userRepository;
     private final ProductRepository productRepository;
     private final LedgerService ledgerService;
+    private final TaxService taxService;
+    private final CurrencyService currencyService;
 
     @Transactional
     public PurchaseOrderResponse createPO(PurchaseOrderRequest purchaseOrderRequest, String userEmail) {
@@ -51,11 +55,16 @@ public class PurchaseOrderService {
         po.setVendor(vendor);
         po.setStatus(PurchaseOrderStatus.DRAFT);
         po.setRaisedBy(raisedBy);
+        po.setCurrency(purchaseOrderRequest.getCurrency() != null
+        ? purchaseOrderRequest.getCurrency() :  "INR");
+        po.setTdsCategory(purchaseOrderRequest.getTdsCategory() != null
+        ? purchaseOrderRequest.getTdsCategory() : "goods");
 
 
         List<PurchaseOrderItem> items = purchaseOrderRequest.getItems()
                 .stream().map(itemReq -> {
-                    var product = productRepository.findById(itemReq.getProductId())
+                    var product = productRepository
+                            .findById(itemReq.getProductId())
                             .orElseThrow(() -> new ResourceNotException("Product not found" + itemReq.getProductId()));
                     PurchaseOrderItem item = new PurchaseOrderItem();
                     item.setPurchaseOrder(po);
@@ -69,7 +78,7 @@ public class PurchaseOrderService {
 
         po.setItems(items);
 
-        BigDecimal total = items.stream()
+        BigDecimal subtotalInCurrency = items.stream()
                 .map(
                         i -> i
                                 .getUnitPrice()
@@ -79,7 +88,40 @@ public class PurchaseOrderService {
                         BigDecimal.ZERO,
                         BigDecimal::add
                 );
-        po.setTotalAmount(total);
+
+        BigDecimal subtotalINR = currencyService.toINR(
+                subtotalInCurrency, po.getCurrency()
+        );
+
+        BigDecimal exchangeRate = currencyService.getRate(
+                po.getCurrency(), "INR"
+        );
+
+        String vendorState = vendor.getLocation() != null
+                ? vendor.getLocation().getState() : null;
+        boolean isInterstate = taxService.isInterstate(vendorState);
+        po.setVendorState(vendorState);
+        po.setIsInterstate(isInterstate);
+
+        BigDecimal gstRate = items.isEmpty()
+                ? BigDecimal.valueOf(18) :
+                items.getFirst().getProduct().getGstRate() != null
+                ? items.getFirst().getProduct().getGstRate()
+                        : BigDecimal.valueOf(18);
+        TaxService.TaxCalculation tax = taxService.calculatePOTax(
+                subtotalINR, gstRate,
+                po.getTdsCategory(), vendorState, isInterstate
+        );
+        po.setSubtotal(subtotalINR);
+        po.setTotalAmount(subtotalINR);
+        po.setCgstAmount(tax.getCgstAmount());
+        po.setIgstAmount(tax.getIgstAmount());
+        po.setSgstAmount(tax.getSgstAmount());
+        po.setTdsAmount(tax.getTdsAmount());
+        po.setTaxTotal(tax.getTaxTotal());
+        po.setGrandTotal(tax.getGrandTotal());
+
+        po.setExchangeRate(exchangeRate);
 
         return toResponse(purchaseOrderRepository.save(po));
     }
@@ -163,7 +205,7 @@ public class PurchaseOrderService {
 
             if(!inventoryList.isEmpty()) {
                 Inventory inv = inventoryList.getFirst();
-                inv.setQuantity(inv.getQuantity() + inv.getQuantity());
+                inv.setQuantity(inv.getQuantity() + item.getQuantity());
                 inventoryRepository.save(inv);
                 StockMovement movement = new StockMovement();
                 movement.setProduct(item.getProduct());
@@ -195,14 +237,29 @@ public class PurchaseOrderService {
                 .toList();
 
         return new PurchaseOrderResponse(
-                po.getId(),
-                po.getVendor().getName(),
-                po.getStatus(),
-                po.getTotalAmount(),
-                po.getRaisedBy() != null ? po.getRaisedBy().getEmail() : null,
-               // po.getApprovedBy() != null ? po.getApprovedBy().getEmail() : null,
-                itemResponses,
-                po.getCreatedAt()
-        );
+                po.getId(),                    // UUID id
+                po.getVendor().getName(),      // String vendorName
+                po.getStatus(),                // PurchaseOrderStatus
+                po.getSubtotal(),              // BigDecimal subtotal
+                po.getTotalAmount(),           // BigDecimal totalAmount
+                po.getGrandTotal(),            // BigDecimal grandTotal
+                po.getCgstAmount(),            // BigDecimal cgstAmount
+                po.getSgstAmount(),            // BigDecimal sgstAmount
+                po.getIgstAmount(),            // BigDecimal igstAmount
+                po.getTdsAmount(),             // BigDecimal tdsAmount
+                po.getTaxTotal(),              // BigDecimal taxTotal
+                po.getCurrency(),              // String currency
+                po.getExchangeRate(),          // BigDecimal exchangeRate
+                po.getIsInterstate(),          // Boolean isInterstate
+                po.getTdsCategory(),           // String tdsCategory
+                po.getCancellationReason(),    // String cancellationReason
+                po.getRaisedBy() != null
+                        ? po.getRaisedBy().getEmail() : null,    // String raisedBy
+                po.getApprovedBy() != null
+                        ? po.getApprovedBy().getEmail() : null,  // String approvedBy
+                itemResponses,                 // List<PurchaseOrderItemResponse>
+                po.getCreatedAt()              // OffsetDateTime createdAt
+
+                );
     }
 }
