@@ -24,4 +24,6 @@ public interface InventoryRepository extends JpaRepository<Inventory, Integer> {
     List<Inventory> fingByLocationIdWithDetails(
             @Param("locationId")  Integer locationId
     );
+    @Query("SELECT i FROM Inventory i JOIN FETCH i.product WHERE i.location.id = :locationId")
+    List<Inventory> findByLocationIdWithDetails(@Param("locationId") Integer locationId);
 }

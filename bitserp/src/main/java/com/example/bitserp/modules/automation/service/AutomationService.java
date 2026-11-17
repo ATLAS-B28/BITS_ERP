@@ -6,6 +6,7 @@ import com.example.bitserp.modules.procurement.entity.PurchaseOrderItem;
 import com.example.bitserp.modules.procurement.entity.PurchaseOrderStatus;
 import com.example.bitserp.modules.procurement.repository.PurchaseOrderRepository;
 import com.example.bitserp.modules.procurement.repository.VendorRepository;
+import com.example.bitserp.modules.procurement.service.PurchaseOrderService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -25,6 +26,7 @@ public class AutomationService {
     private final NotificationService notificationService;
     private final PurchaseOrderRepository purchaseOrderRepository;
     private final VendorRepository vendorRepository;
+    private final PurchaseOrderService purchaseOrderService;
 
     @Transactional
     public void checkAndTriggerAutoPO(Inventory inventory) {
@@ -78,12 +80,15 @@ public class AutomationService {
             item.setProduct(inventory.getProduct());
             item.setQuantity(orderQty);
             item.setUnitPrice(inventory.getProduct().getUnitPrice());
-            item.setTotalPrice(
-                    inventory.getProduct().getUnitPrice()
-                            .multiply(BigDecimal.valueOf(orderQty))
-            );
+//            item.setTotalPrice(
+//                    inventory.getProduct().getUnitPrice()
+//                            .multiply(BigDecimal.valueOf(orderQty))
+//            );
             po.setItems(List.of(item));
-            po.setTotalAmount(item.getTotalPrice());
+            po.setCurrency("INR");
+            po.setTdsCategory("goods");
+            purchaseOrderService.applyTaxes(po, po.getItems());
+            //po.setTotalAmount(item.getTotalPrice());
 
             PurchaseOrder saved = purchaseOrderRepository.save(po);
 

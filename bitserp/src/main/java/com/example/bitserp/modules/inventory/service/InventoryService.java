@@ -1,10 +1,7 @@
 package com.example.bitserp.modules.inventory.service;
 
 import com.example.bitserp.modules.automation.service.AutomationService;
-import com.example.bitserp.modules.inventory.dto.LocationStockSummary;
-import com.example.bitserp.modules.inventory.dto.ProductRequest;
-import com.example.bitserp.modules.inventory.dto.ProductResponse;
-import com.example.bitserp.modules.inventory.dto.StockUpdateRequest;
+import com.example.bitserp.modules.inventory.dto.*;
 import com.example.bitserp.modules.inventory.entity.Inventory;
 import com.example.bitserp.modules.inventory.entity.Product;
 import com.example.bitserp.modules.inventory.entity.StockMovement;
@@ -94,6 +91,20 @@ public class InventoryService {
     }
 
     @Transactional(readOnly = true)
+    public List<LocationInventoryResponse> getByLocation(Integer locationId) {
+        return inventoryRepository.findByLocationIdWithDetails(locationId).stream()
+                .map(i -> new LocationInventoryResponse(
+                        i.getId(),
+                        i.getProduct().getId(),
+                        i.getProduct().getName(),
+                        i.getProduct().getSku(),
+                        i.getProduct().getUnitPrice(),
+                        i.getQuantity(),
+                        i.getReorderLevel()))
+                .toList();
+    }
+
+    @Transactional(readOnly = true)
     public List<Inventory> getLowStockItems() {
         return inventoryRepository.finLowStockItems();
     }
@@ -107,10 +118,10 @@ public class InventoryService {
         );
     }
 
-    @Transactional(readOnly = true)
-    public List<Inventory> getByLocation(Integer locationId) {
-        return inventoryRepository.fingByLocationIdWithDetails(locationId);
-    }
+//    @Transactional(readOnly = true)
+//    public List<Inventory> getByLocation(Integer locationId) {
+//        return inventoryRepository.fingByLocationIdWithDetails(locationId);
+//    }
 
     @Transactional(readOnly = true)
     public List<LocationStockSummary> getStockSummaryByLocation() {

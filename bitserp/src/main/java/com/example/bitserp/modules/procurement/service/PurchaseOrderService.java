@@ -78,50 +78,51 @@ public class PurchaseOrderService {
 
         po.setItems(items);
 
-        BigDecimal subtotalInCurrency = items.stream()
-                .map(
-                        i -> i
-                                .getUnitPrice()
-                                .multiply(BigDecimal.valueOf(i.getQuantity()))
-                )
-                .reduce(
-                        BigDecimal.ZERO,
-                        BigDecimal::add
-                );
+//        BigDecimal subtotalInCurrency = items.stream()
+//                .map(
+//                        i -> i
+//                                .getUnitPrice()
+//                                .multiply(BigDecimal.valueOf(i.getQuantity()))
+//                )
+//                .reduce(
+//                        BigDecimal.ZERO,
+//                        BigDecimal::add
+//                );
+//
+//        BigDecimal subtotalINR = currencyService.toINR(
+//                subtotalInCurrency, po.getCurrency()
+//        );
+//
+//        BigDecimal exchangeRate = currencyService.getRate(
+//                po.getCurrency(), "INR"
+//        );
 
-        BigDecimal subtotalINR = currencyService.toINR(
-                subtotalInCurrency, po.getCurrency()
-        );
-
-        BigDecimal exchangeRate = currencyService.getRate(
-                po.getCurrency(), "INR"
-        );
-
-        String vendorState = vendor.getLocation() != null
-                ? vendor.getLocation().getState() : null;
-        boolean isInterstate = taxService.isInterstate(vendorState);
-        po.setVendorState(vendorState);
-        po.setIsInterstate(isInterstate);
-
-        BigDecimal gstRate = items.isEmpty()
-                ? BigDecimal.valueOf(18) :
-                items.getFirst().getProduct().getGstRate() != null
-                ? items.getFirst().getProduct().getGstRate()
-                        : BigDecimal.valueOf(18);
-        TaxService.TaxCalculation tax = taxService.calculatePOTax(
-                subtotalINR, gstRate,
-                po.getTdsCategory(), vendorState, isInterstate
-        );
-        po.setSubtotal(subtotalINR);
-        po.setTotalAmount(subtotalINR);
-        po.setCgstAmount(tax.getCgstAmount());
-        po.setIgstAmount(tax.getIgstAmount());
-        po.setSgstAmount(tax.getSgstAmount());
-        po.setTdsAmount(tax.getTdsAmount());
-        po.setTaxTotal(tax.getTaxTotal());
-        po.setGrandTotal(tax.getGrandTotal());
-
-        po.setExchangeRate(exchangeRate);
+//        String vendorState = vendor.getLocation() != null
+//                ? vendor.getLocation().getState() : null;
+//        boolean isInterstate = taxService.isInterstate(vendorState);
+//        po.setVendorState(vendorState);
+//        po.setIsInterstate(isInterstate);
+//
+//        BigDecimal gstRate = items.isEmpty()
+//                ? BigDecimal.valueOf(18) :
+//                items.getFirst().getProduct().getGstRate() != null
+//                ? items.getFirst().getProduct().getGstRate()
+//                        : BigDecimal.valueOf(18);
+//        TaxService.TaxCalculation tax = taxService.calculatePOTax(
+//                subtotalINR, gstRate,
+//                po.getTdsCategory(), vendorState, isInterstate
+//        );
+//        po.setSubtotal(subtotalINR);
+//        po.setTotalAmount(subtotalINR);
+//        po.setCgstAmount(tax.getCgstAmount());
+//        po.setIgstAmount(tax.getIgstAmount());
+//        po.setSgstAmount(tax.getSgstAmount());
+//        po.setTdsAmount(tax.getTdsAmount());
+//        po.setTaxTotal(tax.getTaxTotal());
+//        po.setGrandTotal(tax.getGrandTotal());
+//
+//        po.setExchangeRate(exchangeRate);
+        applyTaxes(po, items);
 
         return toResponse(purchaseOrderRepository.save(po));
     }
@@ -190,6 +191,43 @@ public class PurchaseOrderService {
         po.setStatus(PurchaseOrderStatus.REJECTED);
         po.setCancellationReason(reason);
         return toResponse(purchaseOrderRepository.save(po));
+    }
+
+    @Transactional
+    public void applyTaxes(PurchaseOrder po, List<PurchaseOrderItem> items) {
+        String currency = po.getCurrency() != null ? po.getCurrency() : "INR";
+
+        BigDecimal entered = items.stream()
+                .map(i -> i.getUnitPrice().multiply(BigDecimal.valueOf(i.getQuantity())))
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+        BigDecimal subtotalInr = currencyService.toINR(entered, currency);
+        po.setExchangeRate(currencyService.getRate(currency, "INR"));
+
+        String vendorState = po.getVendor().getLocation() != null
+                ? po.getVendor().getLocation().getState() : null;
+        boolean interstate = taxService.isInterstate(vendorState);
+        po.setVendorState(vendorState);
+        po.setIsInterstate(interstate);
+
+        BigDecimal gstRate = items.isEmpty() || items.getFirst().getProduct().getGstRate() == null
+                ? BigDecimal.valueOf(18)
+                : items.getFirst().getProduct().getGstRate();
+
+        String tdsCategory = po.getTdsCategory() != null ? po.getTdsCategory() : "goods";
+
+        TaxService.TaxCalculation tax = taxService.calculatePOTax(
+                subtotalInr, gstRate, tdsCategory, vendorState, interstate
+        );
+
+        po.setSubtotal(subtotalInr);
+        po.setTotalAmount(subtotalInr);
+        po.setCgstAmount(tax.getCgstAmount());
+        po.setSgstAmount(tax.getSgstAmount());
+        po.setIgstAmount(tax.getIgstAmount());
+        po.setTdsAmount(tax.getTdsAmount());
+        po.setTaxTotal(tax.getTaxTotal());
+        po.setGrandTotal(tax.getGrandTotal());
     }
 
     @Transactional
