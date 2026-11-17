@@ -15,6 +15,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -40,6 +41,15 @@ public class InventoryService {
         product.setUnitPrice(request.getUnitPrice());
         product.setUnitOfMeasure(request.getUnitOfMeasure());
         product.setDescription(request.getDescription());
+        product.setItemType(request.getItemType() != null ? request.getItemType() : "PRODUCT");
+        product.setHsnCode(request.getHsnCode());
+        product.setGstRate(request.getGstRate() != null ? request.getGstRate() : BigDecimal.valueOf(18));
+        String sku = request.getSku();
+        if(sku == null || sku.isBlank()) {
+            String prefix = "SERVICE".equals(product.getItemType()) ? "SRV-" : "PRD-";
+            sku = prefix + UUID.randomUUID().toString().substring(0, 6).toUpperCase();
+        }
+        product.setSku(sku);
 
         return toResponse(productRepository.save(product));
     }
@@ -62,9 +72,12 @@ public class InventoryService {
 
     @Transactional
     public void updateStock(UUID productId, StockUpdateRequest request) {
+
         Product product = productRepository.findById(productId)
                 .orElseThrow(() -> new ResourceNotException("Product not found: " + productId));
-
+        if("SERVICE".equals(product.getItemType())) {
+            throw new IllegalArgumentException("Services don't support stock update");
+        }
         Location location = locationRepository.findById(request.getLocationId())
                 .orElseThrow(() -> new ResourceNotException("Location not found: " + request.getLocationId()));
         Inventory inventory = inventoryRepository.findByProductIdAndLocationId(productId, request.getLocationId())

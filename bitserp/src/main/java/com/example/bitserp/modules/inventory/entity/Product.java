@@ -24,6 +24,9 @@ public class Product extends BaseEntity {
     @Column(length = 80)
     private String category;
 
+    @Column(name = "item_type", nullable = false, length = 10)
+    private String itemType = "PRODUCT";
+
     @Column(name = "unit_price", nullable = false, precision = 12, scale = 2)
     private BigDecimal unitPrice;
 

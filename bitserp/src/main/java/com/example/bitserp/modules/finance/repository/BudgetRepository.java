@@ -14,10 +14,15 @@ public interface BudgetRepository extends JpaRepository<Budget, Integer> {
     List<Budget> findByStatus(String status);
 
     @Query("SELECT b FROM Budget b WHERE b.module = :module " +
-            "AND b.status = 'ACTIVE' " +
+            "AND b.status IN ('ACTIVE','EXCEEDED') " +
             "AND b.periodStart <= :date AND b.periodEnd >= :date")
-    Optional<Budget> findActiveByModule(
-            @Param("module") String module,
-            @Param("date") LocalDate date
-            );
+    Optional<Budget> findActiveByModule(@Param("module") String module,
+                                        @Param("date") LocalDate date);
+
+    @Query("SELECT COUNT(b) > 0 FROM Budget b WHERE b.module = :module " +
+            "AND b.status IN ('ACTIVE','EXCEEDED') " +
+            "AND b.periodStart <= :end AND b.periodEnd >= :start")
+    boolean existsOverlappingActive(@Param("module") String module,
+                                    @Param("start") LocalDate start,
+                                    @Param("end") LocalDate end);
 }

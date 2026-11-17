@@ -7,7 +7,9 @@ import com.example.bitserp.modules.finance.entity.Budget;
 import com.example.bitserp.modules.finance.entity.BudgetUtilization;
 import com.example.bitserp.modules.finance.repository.BudgetRepository;
 import com.example.bitserp.modules.finance.repository.BudgetUtilizationRepository;
+import com.example.bitserp.shared.entity.User;
 import com.example.bitserp.shared.exception.ResourceNotException;
+import com.example.bitserp.shared.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -25,18 +27,56 @@ public class BudgetService {
 
     private final BudgetRepository budgetRepository;
     private final BudgetUtilizationRepository budgetUtilizationRepository;
+    private final UserRepository userRepository;
 
-    public BudgetResponse createBudget(BudgetRequest budgetRequest) {
+    public BudgetResponse createBudget(BudgetRequest budgetRequest, String creatorEmail) {
+        User creator = userRepository.findByEmail(creatorEmail)
+                .orElseThrow(() -> new ResourceNotException("User Not Found"));
         Budget budget = new Budget();
         budget.setName(budgetRequest.getName());
         budget.setModule(budgetRequest.getModule());
         budget.setCategory(budgetRequest.getCategory());
         budget.setAllocatedAmount(budgetRequest.getAllocatedAmount());
         budget.setSpentAmount(BigDecimal.ZERO);
+        if(!budgetRequest.getPeriodEnd().isAfter(budgetRequest.getPeriodStart())) {
+            throw new ResourceNotException("Period End Date must be after Period Start Date");
+        }
         budget.setPeriodStart(budgetRequest.getPeriodStart());
         budget.setPeriodEnd(budgetRequest.getPeriodEnd());
-        budget.setStatus("ACTIVE");
+        budget.setStatus("DRAFT");
+        budget.setCreatedBy(creator);
         return toResponse(budgetRepository.save(budget));
+    }
+
+    @Transactional
+    public BudgetResponse approveBudget(Integer id, String approverEmail) {
+        Budget b = budgetRepository.findById(id).orElseThrow(() -> new ResourceNotException("Budget Not Found"));
+        if(!"DRAFT".equals(b.getStatus())) {
+            throw new IllegalStateException("Only DRAFT can be approved");
+        }
+        User approver = userRepository.findByEmail(approverEmail)
+                .orElseThrow(() -> new ResourceNotException("User Not Found"));
+
+        boolean isAdmin = "ADMIN".equals(approver.getRole().getName());
+        if(budgetRepository.existsOverlappingActive(
+                b.getModule(), b.getPeriodStart(), b.getPeriodEnd()
+        )) {
+            throw new IllegalStateException("Budget Already Approved for Module: " + b.getModule() + " in this period" );
+        }
+        b.setStatus("ACTIVE");
+        b.setApprovedBy(approver);
+        return  toResponse(budgetRepository.save(b));
+    }
+
+    @Transactional
+    public BudgetResponse closeBudget(Integer id) {      // also used to reject a draft
+        Budget b = budgetRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotException("Budget not found"));
+        if ("CLOSED".equals(b.getStatus())) {
+            throw new IllegalStateException("Budget is already closed");
+        }
+        b.setStatus("CLOSED");
+        return toResponse(budgetRepository.save(b));
     }
 
     @Transactional(readOnly = true)
@@ -77,6 +117,7 @@ public class BudgetService {
         );
     }
 
+    @Transactional
     public void validateAndDeductBudget(String module, BigDecimal amount, UUID referenceId) {
         Budget budget = budgetRepository
                 .findActiveByModule(module, LocalDate.now())
@@ -88,8 +129,8 @@ public class BudgetService {
                 .subtract(budget.getSpentAmount());
 
         if(amount.compareTo(remaining) > 0) {
-            budget.setStatus("EXCEEDED");
-            budgetRepository.save(budget);
+            //budget.setStatus("EXCEEDED");
+            //budgetRepository.save(budget);
             throw new IllegalArgumentException(
                     "PO amount exceeds remaining budget. Remaining: " + remaining
             );

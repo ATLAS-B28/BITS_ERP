@@ -9,6 +9,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -23,9 +24,27 @@ public class BudgetController {
     @PostMapping("/budgets")
     @PreAuthorize("hasAnyRole('ADMIN','FIN_MANAGER')")
     public ResponseEntity<ApiResponse<BudgetResponse>> createBudget(
-            @Valid @RequestBody BudgetRequest request
+            @Valid @RequestBody BudgetRequest request,
+            @AuthenticationPrincipal String email
             ) {
-        return ResponseEntity.ok(ApiResponse.ok(budgetService.createBudget(request)));
+        return ResponseEntity.ok(ApiResponse.ok(budgetService.createBudget(request, email)));
+    }
+
+    @PatchMapping("/budgets/{id}/approve")
+    @PreAuthorize("hasAnyRole('ADMIN','FIN_MANAGER')")
+    public ResponseEntity<ApiResponse<BudgetResponse>> approveBudget(
+            @PathVariable Integer id,
+            @AuthenticationPrincipal String email
+    ) {
+        return ResponseEntity.ok(ApiResponse.ok(budgetService.approveBudget(id, email)));
+    }
+
+    @PatchMapping("/budgets/{id}/close")
+    @PreAuthorize("hasAnyRole('ADMIN','FIN_MANAGER')")
+    public ResponseEntity<ApiResponse<BudgetResponse>> closeBudget(
+            @PathVariable Integer id
+    ) {
+        return ResponseEntity.ok(ApiResponse.ok(budgetService.closeBudget(id)));
     }
 
     @GetMapping("/budgets")

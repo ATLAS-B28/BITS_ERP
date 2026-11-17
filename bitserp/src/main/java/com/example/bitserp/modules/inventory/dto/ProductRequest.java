@@ -30,4 +30,8 @@ public class ProductRequest {
     private String unitOfMeasure = "units";
 
     private String description;
+
+    private String itemType;
+    private String hsnCode;
+    private BigDecimal gstRate;
 }
