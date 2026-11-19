@@ -100,6 +100,9 @@ public class SecurityConfig {
                         .requestMatchers("/api/notifications/**").authenticated()
                         .requestMatchers("/api/automation/settings")
                         .hasAnyRole("ADMIN","INV_MANAGER","PROC_MANAGER")
+                        .requestMatchers(HttpMethod.GET, "/api/finance/categories")
+                        .hasAnyRole("ADMIN","FIN_MANAGER","FIN_EMPLOYEE",
+                                "PROC_MANAGER","PROC_EMPLOYEE","ACCOUNTS")
                         .requestMatchers("/api/automation/**").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.GET, "/api/inventory/summary-by-location")
                         .hasAnyRole("ADMIN","INV_MANAGER","SALES_MANAGER","PROC_MANAGER")
